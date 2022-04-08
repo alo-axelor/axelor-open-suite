@@ -14,7 +14,7 @@
       <field name="metaModel"/>
       <panel-related field="metaFieldSet" name="metaFieldListPanel" canNew="false"
         canEdit="false" colSpan="12"
-        domain="self.typeName = 'String' and self.metaModel = :metaModel">
+        domain="self.typeName in ('String','Integer','LocalDateTime','Long','Double','LocalTime','ZonedDateTime','BigDecimal') and self.metaModel = :metaModel">
         <field name="name"/>
         <field name="label"/>
         <field name="typeName"/>
