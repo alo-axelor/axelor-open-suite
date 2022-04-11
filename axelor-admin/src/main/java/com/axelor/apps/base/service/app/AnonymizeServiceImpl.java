@@ -18,10 +18,15 @@ import org.slf4j.LoggerFactory;
 public class AnonymizeServiceImpl implements AnonymizeService {
 
   protected Logger LOG = LoggerFactory.getLogger(getClass());
+  protected static final int MIN_YEAR_DATE = 2000;
+  protected static final int MAX_MONTH_DATE = 12;
+  protected static final int MAX_DAY_DATE = 28;
+  protected static final int MIN_DATE = 1;
 
   @Override
   public Object anonymizeValue(Object object, Property property) {
     switch (property.getType()) {
+      case TEXT:
       case STRING:
         byte[] shaInBytes = hashString(object.toString());
 
@@ -33,7 +38,7 @@ public class AnonymizeServiceImpl implements AnonymizeService {
 
       case INTEGER:
         Random randomInt = new Random();
-        return BigInteger.valueOf(randomInt.nextInt());
+        return BigInteger.valueOf(randomInt.nextInt() & Integer.MAX_VALUE);
 
       case LONG:
         Random randomLong = new Random();
@@ -54,25 +59,13 @@ public class AnonymizeServiceImpl implements AnonymizeService {
         }
 
       case DATE:
-        Random randomDate = new Random();
-        return LocalDate.of(
-            randomDate.nextInt(9999), randomDate.nextInt(12), randomDate.nextInt(28));
+        return randomLocalDate();
 
       case TIME:
-        Random randomTime = new Random();
-        return LocalTime.of(randomTime.nextInt(23), randomTime.nextInt(59), randomTime.nextInt(59));
+        return randomLocalTime();
 
       case DATETIME:
-        Random randomDateTime = new Random();
-        return LocalDateTime.of(
-            LocalDate.of(
-                randomDateTime.nextInt(9999),
-                randomDateTime.nextInt(12),
-                randomDateTime.nextInt(28)),
-            LocalTime.of(
-                randomDateTime.nextInt(23),
-                randomDateTime.nextInt(59),
-                randomDateTime.nextInt(59)));
+        return randomLocalDateTime();
 
       default:
         return null;
@@ -104,5 +97,22 @@ public class AnonymizeServiceImpl implements AnonymizeService {
       sb.append(String.format("%02x", b));
     }
     return sb.toString();
+  }
+
+  protected LocalDateTime randomLocalDateTime() {
+    return LocalDateTime.of(randomLocalDate(), randomLocalTime());
+  }
+
+  protected LocalDate randomLocalDate() {
+    Random randomDate = new Random();
+    return LocalDate.of(
+        randomDate.nextInt(LocalDate.now().getYear() + 1 - MIN_YEAR_DATE) + MIN_YEAR_DATE,
+        randomDate.nextInt(MAX_MONTH_DATE + 1 - MIN_DATE) + 1,
+        randomDate.nextInt(MAX_DAY_DATE + 1 - MIN_DATE) + 1);
+  }
+
+  protected LocalTime randomLocalTime() {
+    Random randomTime = new Random();
+    return LocalTime.of(randomTime.nextInt(23), randomTime.nextInt(59), randomTime.nextInt(59));
   }
 }
