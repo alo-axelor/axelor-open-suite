@@ -1,0 +1,5 @@
+"metaFieldSet_name","processInstanceId","metaModel_name","importId"
+"password|name|fixedPhone|description|partnerSeq|headOfficeAddress|timeSlot|department|taxNbr|firstName|simpleFullName|mobilePhone|fullName|fax|functionBusinessCard|deliveryComments|webSite|registrationCode","","Partner","1"
+"name","","Company","2"
+"address|name","","EmailAddress","3"
+"name|label|code","","Account","4"

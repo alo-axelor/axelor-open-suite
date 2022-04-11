@@ -15,4 +15,16 @@
   <input file="meta_metaMenu.csv" separator=";" type="com.axelor.meta.db.MetaMenu"
     search="self.name = :name and self.module = 'axelor-admin'" update="true"/>
 
+  <input file="base_dataBackupConfigAnonymizeLineTemplace.csv" separator=";" type="com.axelor.apps.base.db.DataBackupConfigAnonymizeLine"
+
+  <input file="DataBackupConfigAnonymizeLine.csv" type="com.axelor.apps.base.db.DataBackupConfigAnonymizeLine" search="self.importId = :importId" update="false">
+    <bind  column="metaFieldSet_name" to="metaFieldSet" search="self.name in :metaFieldSet_name" update="true" eval="metaFieldSet_name.split(&apos;\\|&apos;) as List">
+
+    </bind>
+    <bind column="metaModel_name" to="metaModel" search="self.name = :metaModel_name" update="true">
+
+    </bind>
+
+  </input>
+
 </csv-inputs>
