@@ -27,6 +27,7 @@ import com.axelor.apps.base.service.BlockingService;
 import com.axelor.apps.base.service.InternationalService;
 import com.axelor.apps.base.service.ProductCompanyService;
 import com.axelor.apps.base.service.tax.FiscalPositionService;
+import com.axelor.apps.base.service.tax.TaxService;
 import com.axelor.apps.purchase.db.PurchaseOrder;
 import com.axelor.apps.purchase.db.PurchaseOrderLine;
 import com.axelor.apps.purchase.service.PurchaseOrderLineService;
@@ -128,6 +129,8 @@ public class PurchaseOrderLineController {
 
     PurchaseOrder purchaseOrder = this.getPurchaseOrder(context);
 
+    TaxService taxService = Beans.get(TaxService.class);
+
     if (purchaseOrder == null || purchaseOrderLine.getProduct() == null) {
       return;
     }
@@ -187,7 +190,7 @@ public class PurchaseOrderLineController {
                 != PriceListLineRepository.AMOUNT_TYPE_PERCENT) {
           response.setValue(
               "discountAmount",
-              purchaseOrderLineService.convertUnitPrice(
+              taxService.convertUnitPrice(
                   purchaseOrderLine.getProduct().getInAti(),
                   purchaseOrderLine.getTaxLine(),
                   (BigDecimal) discounts.get("discountAmount")));
@@ -205,15 +208,12 @@ public class PurchaseOrderLineController {
         if (purchaseOrderLine.getProduct().getInAti()) {
           response.setValue("inTaxPrice", price);
           response.setValue(
-              "price",
-              purchaseOrderLineService.convertUnitPrice(
-                  true, purchaseOrderLine.getTaxLine(), price));
+              "price", taxService.convertUnitPrice(true, purchaseOrderLine.getTaxLine(), price));
         } else {
           response.setValue("price", price);
           response.setValue(
               "inTaxPrice",
-              purchaseOrderLineService.convertUnitPrice(
-                  false, purchaseOrderLine.getTaxLine(), price));
+              taxService.convertUnitPrice(false, purchaseOrderLine.getTaxLine(), price));
         }
       }
 
@@ -238,8 +238,7 @@ public class PurchaseOrderLineController {
       TaxLine taxLine = purchaseOrderLine.getTaxLine();
 
       response.setValue(
-          "price",
-          Beans.get(PurchaseOrderLineService.class).convertUnitPrice(true, taxLine, inTaxPrice));
+          "price", Beans.get(TaxService.class).convertUnitPrice(true, taxLine, inTaxPrice));
     } catch (Exception e) {
       response.setFlash(e.getMessage());
     }
@@ -261,8 +260,7 @@ public class PurchaseOrderLineController {
       TaxLine taxLine = purchaseOrderLine.getTaxLine();
 
       response.setValue(
-          "inTaxPrice",
-          Beans.get(PurchaseOrderLineService.class).convertUnitPrice(false, taxLine, exTaxPrice));
+          "inTaxPrice", Beans.get(TaxService.class).convertUnitPrice(false, taxLine, exTaxPrice));
     } catch (Exception e) {
       response.setFlash(e.getMessage());
     }
@@ -417,7 +415,7 @@ public class PurchaseOrderLineController {
       String userLanguage = AuthUtils.getUser().getLanguage();
 
       if (purchaseOrderLine.getProduct() != null && partner != null) {
-        String partnerLanguage = partner.getLanguage().getCode();
+/*        String partnerLanguage = partner.getLanguage().getCode();
         response.setValue(
             "description",
             internationalService.translate(
@@ -425,7 +423,7 @@ public class PurchaseOrderLineController {
         response.setValue(
             "productName",
             internationalService.translate(
-                purchaseOrderLine.getProduct().getName(), userLanguage, partnerLanguage));
+                purchaseOrderLine.getProduct().getName(), userLanguage, partnerLanguage));*/
       }
     } catch (Exception e) {
       TraceBackService.trace(response, e);

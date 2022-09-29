@@ -27,6 +27,7 @@ import com.axelor.apps.base.service.InternationalService;
 import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.pricing.PricingService;
 import com.axelor.apps.base.service.tax.FiscalPositionService;
+import com.axelor.apps.base.service.tax.TaxService;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.db.repo.SaleOrderLineRepository;
@@ -171,6 +172,8 @@ public class SaleOrderLineController {
 
     SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
 
+    TaxService taxService = Beans.get(TaxService.class);
+
     if (saleOrder == null || saleOrderLine.getProduct() == null) {
       return;
     }
@@ -205,13 +208,12 @@ public class SaleOrderLineController {
           if (saleOrderLine.getProduct().getInAti()) {
             response.setValue("inTaxPrice", price);
             response.setValue(
-                "price",
-                saleOrderLineService.convertUnitPrice(true, saleOrderLine.getTaxLine(), price));
+                "price", taxService.convertUnitPrice(true, saleOrderLine.getTaxLine(), price));
           } else {
             response.setValue("price", price);
             response.setValue(
                 "inTaxPrice",
-                saleOrderLineService.convertUnitPrice(false, saleOrderLine.getTaxLine(), price));
+                taxService.convertUnitPrice(false, saleOrderLine.getTaxLine(), price));
           }
         }
 
@@ -220,7 +222,7 @@ public class SaleOrderLineController {
                 != PriceListLineRepository.AMOUNT_TYPE_PERCENT) {
           response.setValue(
               "discountAmount",
-              saleOrderLineService.convertUnitPrice(
+              taxService.convertUnitPrice(
                   saleOrderLine.getProduct().getInAti(),
                   saleOrderLine.getTaxLine(),
                   (BigDecimal) discounts.get("discountAmount")));
@@ -251,8 +253,7 @@ public class SaleOrderLineController {
       TaxLine taxLine = saleOrderLine.getTaxLine();
 
       response.setValue(
-          "price",
-          Beans.get(SaleOrderLineService.class).convertUnitPrice(true, taxLine, inTaxPrice));
+          "price", Beans.get(TaxService.class).convertUnitPrice(true, taxLine, inTaxPrice));
     } catch (Exception e) {
       response.setFlash(e.getMessage());
     }
@@ -274,8 +275,7 @@ public class SaleOrderLineController {
       TaxLine taxLine = saleOrderLine.getTaxLine();
 
       response.setValue(
-          "inTaxPrice",
-          Beans.get(SaleOrderLineService.class).convertUnitPrice(false, taxLine, exTaxPrice));
+          "inTaxPrice", Beans.get(TaxService.class).convertUnitPrice(false, taxLine, exTaxPrice));
     } catch (Exception e) {
       response.setFlash(e.getMessage());
     }

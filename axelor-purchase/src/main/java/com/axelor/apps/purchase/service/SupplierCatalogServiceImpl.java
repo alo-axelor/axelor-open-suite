@@ -17,6 +17,7 @@
  */
 package com.axelor.apps.purchase.service;
 
+import com.axelor.apps.account.db.TaxLine;
 import com.axelor.apps.base.db.Company;
 import com.axelor.apps.base.db.Currency;
 import com.axelor.apps.base.db.Partner;
@@ -24,12 +25,14 @@ import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.service.CurrencyService;
 import com.axelor.apps.base.service.ProductCompanyService;
 import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.tax.TaxService;
 import com.axelor.apps.purchase.db.SupplierCatalog;
 import com.axelor.apps.purchase.db.repo.SupplierCatalogRepository;
 import com.axelor.apps.purchase.service.app.AppPurchaseService;
 import com.axelor.exception.AxelorException;
 import com.axelor.inject.Beans;
 import com.google.inject.Inject;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -39,13 +42,29 @@ import java.util.Map;
 
 public class SupplierCatalogServiceImpl implements SupplierCatalogService {
 
-  @Inject protected AppBaseService appBaseService;
+  protected AppBaseService appBaseService;
 
-  @Inject protected AppPurchaseService appPurchaseService;
+  protected AppPurchaseService appPurchaseService;
 
-  @Inject protected CurrencyService currencyService;
+  protected CurrencyService currencyService;
 
-  @Inject protected ProductCompanyService productCompanyService;
+  protected ProductCompanyService productCompanyService;
+
+  protected TaxService taxService;
+
+  @Inject
+  public SupplierCatalogServiceImpl(
+      AppPurchaseService appBaseService,
+      AppPurchaseService appPurchaseService,
+      CurrencyService currencyService,
+      ProductCompanyService productCompanyService,
+      TaxService taxService) {
+    this.appBaseService = appBaseService;
+    this.appPurchaseService = appPurchaseService;
+    this.currencyService = currencyService;
+    this.productCompanyService = productCompanyService;
+    this.taxService = taxService;
+  }
 
   @SuppressWarnings("unchecked")
   @Override
@@ -138,5 +157,85 @@ public class SupplierCatalogServiceImpl implements SupplierCatalogService {
       return resSupplierCatalog;
     }
     return null;
+  }
+
+  @Override
+  public Map<String, String> getProductSupplierInfos(
+      Partner partner, Company company, Product product) throws AxelorException {
+
+    if (product == null) {
+      return null;
+    }
+
+    Map<String, String> productSupplierInfo = new HashMap<>();
+
+    SupplierCatalog supplierCatalog = getSupplierCatalog(product, partner, company);
+
+    if (supplierCatalog != null) {
+      productSupplierInfo.put("productName", supplierCatalog.getProductSupplierName());
+      productSupplierInfo.put("productCode", supplierCatalog.getProductSupplierCode());
+    }
+
+    return productSupplierInfo;
+  }
+
+  public BigDecimal getQty(Product product, Partner supplierPartner, Company company)
+      throws AxelorException {
+
+    SupplierCatalog supplierCatalog = getSupplierCatalog(product, supplierPartner, company);
+
+    if (supplierCatalog != null) {
+      return supplierCatalog.getMinQty();
+    }
+
+    return BigDecimal.ONE;
+  }
+
+  /**
+   * A function used to get the unit price of a purchase order or invoice line, either in ati or wt
+   *
+   * @param product
+   * @param supplierPartner
+   * @param company
+   * @param currency
+   * @param localDate
+   * @param taxLine
+   * @param resultInAti
+   * @return
+   * @throws AxelorException
+   */
+  public BigDecimal getUnitPrice(
+      Product product,
+      Partner supplierPartner,
+      Company company,
+      Currency currency,
+      LocalDate localDate,
+      TaxLine taxLine,
+      boolean resultInAti)
+      throws AxelorException {
+    BigDecimal purchasePrice = new BigDecimal(0);
+    Currency purchaseCurrency = null;
+    SupplierCatalog supplierCatalog = getSupplierCatalog(product, supplierPartner, company);
+
+    if (supplierCatalog != null) {
+      purchasePrice = supplierCatalog.getPrice();
+      purchaseCurrency = supplierCatalog.getSupplierPartner().getCurrency();
+    } else {
+      if (product != null) {
+        purchasePrice = (BigDecimal) productCompanyService.get(product, "purchasePrice", company);
+        purchaseCurrency =
+            (Currency) productCompanyService.get(product, "purchaseCurrency", company);
+      }
+    }
+
+    Boolean inAti = (Boolean) productCompanyService.get(product, "inAti", company);
+    BigDecimal price =
+        (inAti == resultInAti)
+            ? purchasePrice
+            : taxService.convertUnitPrice(inAti, taxLine, purchasePrice);
+
+    return currencyService
+        .getAmountCurrencyConvertedAtDate(purchaseCurrency, currency, price, localDate)
+        .setScale(appBaseService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
   }
 }

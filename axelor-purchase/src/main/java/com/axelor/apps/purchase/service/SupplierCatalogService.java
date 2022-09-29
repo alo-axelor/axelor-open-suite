@@ -17,6 +17,7 @@
  */
 package com.axelor.apps.purchase.service;
 
+import com.axelor.apps.account.db.TaxLine;
 import com.axelor.apps.base.db.Company;
 import com.axelor.apps.base.db.Currency;
 import com.axelor.apps.base.db.Partner;
@@ -40,4 +41,20 @@ public interface SupplierCatalogService {
 
   public SupplierCatalog getSupplierCatalog(
       Product product, Partner supplierPartner, Company company) throws AxelorException;
+
+  Map<String, String> getProductSupplierInfos(Partner partner, Company company, Product product)
+      throws AxelorException;
+
+  BigDecimal getQty(Product product, Partner supplierPartner, Company company)
+      throws AxelorException;
+
+  BigDecimal getUnitPrice(
+      Product product,
+      Partner supplierPartner,
+      Company company,
+      Currency currency,
+      LocalDate localDate,
+      TaxLine taxLine,
+      boolean resultInAti)
+      throws AxelorException;
 }

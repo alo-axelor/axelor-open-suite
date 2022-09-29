@@ -82,4 +82,29 @@ public class TaxService {
         I18n.get(BaseExceptionMessage.TAX_1),
         tax.getName());
   }
+
+  /**
+   * Convert a product's unit price from incl. tax to ex. tax or the other way round.
+   *
+   * <p>If the price is ati, it will be converted to ex. tax, and if it isn't it will be converted
+   * to ati.
+   *
+   * @param priceIsAti a boolean indicating if the price is ati.
+   * @param taxLine the tax to apply.
+   * @param price the unit price to convert.
+   * @return the converted price as a BigDecimal.
+   */
+  public BigDecimal convertUnitPrice(Boolean priceIsAti, TaxLine taxLine, BigDecimal price) {
+
+    if (taxLine == null) {
+      return price;
+    }
+
+    if (priceIsAti) {
+      price = price.divide(taxLine.getValue().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP);
+    } else {
+      price = price.add(price.multiply(taxLine.getValue()));
+    }
+    return price;
+  }
 }
