@@ -622,7 +622,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         paymentModeService.getPaymentModeJournal(paymentMode, company, companyBankDetails);
 
     MoveLine expenseMoveLine = this.getExpenseEmployeeMoveLineByLoop(expense);
-
+    Partner partner1=null;
     if (expenseMoveLine == null) {
       return null;
     }
