@@ -58,6 +58,8 @@ public class GlobalAuditTracker {
 
   private static final ThreadLocal<List<GlobalTrackingLog>> LOGS = new ThreadLocal<>();
 
+  private static final ThreadLocal<List<String>> modelNameList = new ThreadLocal<>();
+
   /**
    * This method should be called from {@link
    * AuditInterceptor#beforeTransactionCompletion(Transaction)} method to finish change recording.
@@ -288,5 +290,13 @@ public class GlobalAuditTracker {
           String.format(
               "[%s]", newIdList.stream().map(String::valueOf).collect(Collectors.joining(", "))));
     }
+  }
+
+  /*protected void initModelNameList(){
+    modelNameList.set();
+  }*/
+
+  protected List<String> getModelNameList() {
+    return Beans.get(GlobalTrackingConfigurationService.class).getModelNameList();
   }
 }

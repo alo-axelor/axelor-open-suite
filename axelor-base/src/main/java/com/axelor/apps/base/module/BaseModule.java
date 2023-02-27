@@ -160,8 +160,13 @@ import com.axelor.apps.base.service.weeklyplanning.WeeklyPlanningService;
 import com.axelor.apps.base.service.weeklyplanning.WeeklyPlanningServiceImp;
 import com.axelor.apps.base.tracking.ExportObserver;
 import com.axelor.apps.base.tracking.GlobalAuditInterceptor;
+import com.axelor.apps.base.tracking.GlobalConfigurationStartup;
+import com.axelor.apps.base.tracking.GlobalTrackingConfigurationService;
+import com.axelor.apps.base.tracking.GlobalTrackingConfigurationServiceImpl;
 import com.axelor.apps.base.tracking.GlobalTrackingLogService;
 import com.axelor.apps.base.tracking.GlobalTrackingLogServiceImpl;
+import com.axelor.apps.base.tracking.GlobalTrackingRepositoryService;
+import com.axelor.apps.base.tracking.GlobalTrackingRepositoryServiceImpl;
 import com.axelor.apps.message.service.MailAccountServiceImpl;
 import com.axelor.apps.message.service.MailServiceMessageImpl;
 import com.axelor.apps.message.service.MessageServiceImpl;
@@ -260,5 +265,8 @@ public class BaseModule extends AxelorModule {
     bind(PricedOrderDomainService.class).to(PricedOrderDomainServiceImpl.class);
     bind(InternationalService.class).to(InternationalServiceImpl.class);
     bind(SequenceVersionGeneratorService.class).to(SequenceVersionGeneratorServiceImpl.class);
+    bind(GlobalTrackingConfigurationService.class).to(GlobalTrackingConfigurationServiceImpl.class);
+    /*bind(GlobalConfigurationStartup.class);*/
+    bind(GlobalTrackingRepositoryService.class).to(GlobalTrackingRepositoryServiceImpl.class);
   }
 }

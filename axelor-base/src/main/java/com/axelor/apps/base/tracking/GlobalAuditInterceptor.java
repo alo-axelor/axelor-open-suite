@@ -27,6 +27,7 @@ import com.axelor.auth.db.AuditableModel;
 import com.axelor.auth.db.Group;
 import com.axelor.auth.db.Role;
 import com.axelor.exception.db.TraceBack;
+import com.axelor.inject.Beans;
 import com.axelor.mail.db.MailFlags;
 import com.axelor.mail.db.MailFollower;
 import com.axelor.mail.db.MailMessage;
@@ -42,6 +43,7 @@ import com.axelor.meta.db.MetaView;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -79,11 +81,14 @@ public class GlobalAuditInterceptor extends AuditInterceptor {
   };
 
   private final ThreadLocal<GlobalAuditTracker> globalTracker = new ThreadLocal<>();
+  private static final ThreadLocal<List<String>> modelNameList = new ThreadLocal<>();
+  /*private List<String> modelNameList;*/
 
   @Override
   public void afterTransactionBegin(Transaction tx) {
     globalTracker.set(new GlobalAuditTracker());
     globalTracker.get().init();
+    initModelNameList();
     super.afterTransactionBegin(tx);
   }
 
@@ -104,12 +109,21 @@ public class GlobalAuditInterceptor extends AuditInterceptor {
   @Override
   public boolean onSave(
       Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
+    boolean onSave = super.onSave(entity, id, state, propertyNames, types);
 
-    if (!super.onSave(entity, id, state, propertyNames, types)
+    if (!onSave
         || Arrays.asList(BACKLISTED_CLASSES).contains(entity.getClass())
-        || !(entity instanceof AuditableModel)) {
+        || !(entity instanceof AuditableModel)
+        || !isTracked()) {
       return false;
     }
+
+/*    if (!onSave
+            || Arrays.asList(BACKLISTED_CLASSES).contains(entity.getClass())
+            || !(entity instanceof AuditableModel)
+            ) {
+      return false;
+    }*/
 
     GlobalTrackingLog log =
         globalTracker
@@ -165,16 +179,28 @@ public class GlobalAuditInterceptor extends AuditInterceptor {
       String[] propertyNames,
       Type[] types) {
 
-    if (!super.onFlushDirty(entity, id, currentState, previousState, propertyNames, types)
-        || Arrays.asList(BACKLISTED_CLASSES).contains(entity.getClass())
-        || !(entity instanceof AuditableModel)) {
-      return false;
-    }
+    boolean onFlushDirty = super.onFlushDirty(entity, id, currentState, previousState, propertyNames, types);
 
     if (globalTracker.get() == null) {
       globalTracker.set(new GlobalAuditTracker());
       globalTracker.get().init();
+      initModelNameList();
     }
+
+/*    if (!onFlushDirty
+        || Arrays.asList(BACKLISTED_CLASSES).contains(entity.getClass())
+        || !(entity instanceof AuditableModel)
+            || !isTracked()) {
+      return false;
+    }*/
+
+    if (!onFlushDirty
+            || Arrays.asList(BACKLISTED_CLASSES).contains(entity.getClass())
+            || !(entity instanceof AuditableModel)) {
+      return false;
+    }
+
+
     GlobalTrackingLog log =
         globalTracker
             .get()
@@ -261,5 +287,16 @@ public class GlobalAuditInterceptor extends AuditInterceptor {
   @Override
   public void onCollectionUpdate(Object collection, Serializable key) {
     globalTracker.get().addCollectionModification(collection, (Long) key);
+  }
+
+  private boolean isTracked() {
+    /*if(modelNameList.get() != null && !modelNameList.get().isEmpty()){
+      return modelNameList.get().contains(entity.getClass().getSimpleName());
+    }*/
+    return false;
+  }
+
+  private void initModelNameList(){
+    modelNameList.set(globalTracker.get().getModelNameList());
   }
 }

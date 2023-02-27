@@ -312,7 +312,9 @@ public class StockMoveServiceImpl implements StockMoveService {
 
     stockMove.setCancelReason(null);
 
+    LOG.info("START SAVE");
     stockMoveRepo.save(stockMove);
+    LOG.info("END SAVE");
     if (stockMove.getTypeSelect() == StockMoveRepository.TYPE_OUTGOING
         && stockMove.getPlannedStockMoveAutomaticMail() != null
         && stockMove.getPlannedStockMoveAutomaticMail()) {

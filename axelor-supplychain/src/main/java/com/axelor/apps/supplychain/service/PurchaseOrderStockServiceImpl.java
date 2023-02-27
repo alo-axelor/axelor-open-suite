@@ -270,12 +270,16 @@ public class PurchaseOrderStockServiceImpl implements PurchaseOrderStockService 
       }
     }
     if (stockMove.getStockMoveLineList() != null && !stockMove.getStockMoveLineList().isEmpty()) {
+      LOG.info("START PLAN");
       stockMoveService.plan(stockMove);
+      LOG.info("END PLAN");
       stockMoveIdList.add(stockMove.getId());
     }
     if (qualityStockMove.getStockMoveLineList() != null
         && !qualityStockMove.getStockMoveLineList().isEmpty()) {
+      LOG.info("START PLAN");
       stockMoveService.plan(qualityStockMove);
+      LOG.info("END PLAN");
       stockMoveIdList.add(qualityStockMove.getId());
     }
 

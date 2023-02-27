@@ -5,7 +5,7 @@
 
   <form name="app-base-config-form" title="App base" model="com.axelor.apps.base.db.AppBase"
     width="large" canDelete="false" canNew="false" canCopy="false"
-    onSave="action-base-method-model-email-link-onsave">
+    onSave="action-base-method-model-email-link-onsave, action-app-base-method-update-global-tracking-config-lines">
     <toolbar>
       <button name="back" title="Back" hidden="true" onClick=""/>
       <button name="search" title="Search" hidden="true" onClick=""/>
@@ -197,4 +197,9 @@
     <attribute name="domain" for="productSequence"
       expr="eval: &quot; self.codeSelect = 'product' &quot;"/>
   </action-attrs>
+
+  <action-method name="action-app-base-method-update-global-tracking-config-lines">
+    <call class="com.axelor.apps.base.tracking.GlobalTrackingConfigurationController"
+      method="updateConfigurationLines"/>
+  </action-method>
 </object-views>
