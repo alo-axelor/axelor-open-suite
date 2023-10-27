@@ -22,10 +22,12 @@ import com.axelor.apps.account.exception.AccountExceptionMessage;
 import com.axelor.apps.bankpayment.db.BankReconciliation;
 import com.axelor.apps.bankpayment.db.BankReconciliationLine;
 import com.axelor.apps.bankpayment.db.BankStatement;
+import com.axelor.apps.bankpayment.db.BankStatementLine;
 import com.axelor.apps.bankpayment.db.BankStatementLineAFB120;
 import com.axelor.apps.bankpayment.db.repo.BankReconciliationLineRepository;
 import com.axelor.apps.bankpayment.db.repo.BankReconciliationRepository;
 import com.axelor.apps.bankpayment.db.repo.BankStatementRepository;
+import com.axelor.apps.bankpayment.service.BankDetailsBankPaymentService;
 import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.base.db.BankDetails;
 import com.axelor.apps.base.db.repo.TraceBackRepository;
@@ -35,6 +37,9 @@ import com.axelor.db.JPA;
 import com.axelor.i18n.I18n;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,17 +49,19 @@ public class BankStatementRemoveServiceImpl implements BankStatementRemoveServic
   protected BankStatementService bankStatementService;
   protected BankReconciliationRepository bankReconciliationRepository;
   protected BankReconciliationLineRepository bankReconciliationLineRepository;
+  protected BankStatementLineFetchService bankStatementLineFetchService;
+  protected BankDetailsBankPaymentService bankDetailsBankPaymentService;
+  protected BankStatementLineDeleteService bankStatementLineDeleteService;
 
   @Inject
-  public BankStatementRemoveServiceImpl(
-      BankStatementRepository bankStatementRepo,
-      BankStatementService bankStatementService,
-      BankReconciliationRepository bankReconciliationRepository,
-      BankReconciliationLineRepository bankReconciliationLineRepository) {
+  public BankStatementRemoveServiceImpl(BankStatementRepository bankStatementRepo, BankStatementService bankStatementService, BankReconciliationRepository bankReconciliationRepository, BankReconciliationLineRepository bankReconciliationLineRepository, BankStatementLineFetchService bankStatementLineFetchService, BankDetailsBankPaymentService bankDetailsBankPaymentService, BankStatementLineDeleteService bankStatementLineDeleteService) {
     this.bankStatementRepo = bankStatementRepo;
     this.bankStatementService = bankStatementService;
     this.bankReconciliationRepository = bankReconciliationRepository;
     this.bankReconciliationLineRepository = bankReconciliationLineRepository;
+    this.bankStatementLineFetchService = bankStatementLineFetchService;
+    this.bankDetailsBankPaymentService = bankDetailsBankPaymentService;
+    this.bankStatementLineDeleteService = bankStatementLineDeleteService;
   }
 
   @Override
@@ -83,8 +90,8 @@ public class BankStatementRemoveServiceImpl implements BankStatementRemoveServic
   public void deleteStatement(BankStatement bankStatement) throws Exception {
     this.checkIfCanRemoveBankStatement(bankStatement);
     List<BankDetails> detailList = bankStatementService.fetchBankDetailsList(bankStatement);
-    bankStatementService.deleteBankStatementLines(bankStatement);
-    bankStatementService.updateBankDetailsBalanceAndDate(detailList);
+    bankStatementLineDeleteService.deleteBankStatementLines(bankStatement);
+    bankDetailsBankPaymentService.updateBankDetailsBalanceAndDate(detailList);
     bankStatementRepo.remove(bankStatement);
   }
 
@@ -103,11 +110,11 @@ public class BankStatementRemoveServiceImpl implements BankStatementRemoveServic
           bankReconciliationList.stream().map(it -> it.getName()).collect(Collectors.joining(",")));
     }
 
-    List<BankStatementLineAFB120> bankStatementLineList =
-        bankStatementService.getBankStatementLines(bankStatement);
+    List<BankStatementLine> bankStatementLineList =
+        bankStatementLineFetchService.getBankStatementLines(bankStatement);
 
     if (!ObjectUtils.isEmpty(bankStatementLineList)) {
-      for (BankStatementLineAFB120 bankStatementLine : bankStatementLineList) {
+      for (BankStatementLine bankStatementLine : bankStatementLineList) {
 
         List<BankReconciliationLine> bankReconciliationLineList =
             bankReconciliationLineRepository

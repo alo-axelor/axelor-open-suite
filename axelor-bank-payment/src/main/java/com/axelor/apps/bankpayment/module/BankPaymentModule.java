@@ -61,6 +61,8 @@ import com.axelor.apps.bankpayment.ebics.service.EbicsBankServiceImpl;
 import com.axelor.apps.bankpayment.ebics.service.EbicsPartnerService;
 import com.axelor.apps.bankpayment.ebics.service.EbicsPartnerServiceImpl;
 import com.axelor.apps.bankpayment.service.AccountingReportPrintServiceBankPaymentImpl;
+import com.axelor.apps.bankpayment.service.BankDetailsBankPaymentService;
+import com.axelor.apps.bankpayment.service.BankDetailsBankPaymentServiceImpl;
 import com.axelor.apps.bankpayment.service.InvoiceTermBankPaymentService;
 import com.axelor.apps.bankpayment.service.InvoiceTermBankPaymentServiceImpl;
 import com.axelor.apps.bankpayment.service.PaymentScheduleLineBankPaymentService;
@@ -78,6 +80,8 @@ import com.axelor.apps.bankpayment.service.bankorder.BankOrderService;
 import com.axelor.apps.bankpayment.service.bankorder.BankOrderServiceImpl;
 import com.axelor.apps.bankpayment.service.bankreconciliation.BankReconciliationService;
 import com.axelor.apps.bankpayment.service.bankreconciliation.BankReconciliationServiceImpl;
+import com.axelor.apps.bankpayment.service.bankstatement.BankStatementLineFetchService;
+import com.axelor.apps.bankpayment.service.bankstatement.BankStatementLineFetchServiceImpl;
 import com.axelor.apps.bankpayment.service.bankstatement.BankStatementRemoveService;
 import com.axelor.apps.bankpayment.service.bankstatement.BankStatementRemoveServiceImpl;
 import com.axelor.apps.bankpayment.service.bankstatementquery.BankStatementQueryService;
@@ -200,5 +204,7 @@ public class BankPaymentModule extends AxelorModule {
     bind(MoveCancelBankPaymentService.class).to(MoveCancelBankPaymentServiceImpl.class);
 
     bind(BankReconciliationService.class).to(BankReconciliationServiceImpl.class);
+    bind(BankStatementLineFetchService.class).to(BankStatementLineFetchServiceImpl.class);
+    bind(BankDetailsBankPaymentService.class).to(BankDetailsBankPaymentServiceImpl.class);
   }
 }
