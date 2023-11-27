@@ -1532,9 +1532,9 @@
 
   <action-attrs name="action-stock-move-attrs-stock-location-readonly">
     <attribute for="fromStockLocation" name="readonly"
-      expr="eval: statusSelect != 1 || (stockMoveLineList?.size() > 0 &amp;&amp; __config__.app.getApp('stock')?.isManageStockLocationOnStockMoveLine)"/>
+      expr="eval: statusSelect > 2 || (stockMoveLineList?.size() > 0 &amp;&amp; __config__.app.getApp('stock')?.isManageStockLocationOnStockMoveLine)"/>
     <attribute for="toStockLocation" name="readonly"
-      expr="eval: statusSelect != 1 || (stockMoveLineList?.size() > 0 &amp;&amp; __config__.app.getApp('stock')?.isManageStockLocationOnStockMoveLine)"/>
+      expr="eval: statusSelect > 2 || (stockMoveLineList?.size() > 0 &amp;&amp; __config__.app.getApp('stock')?.isManageStockLocationOnStockMoveLine)"/>
   </action-attrs>
 
   <action-group name="action-stock-move-group-print-stock-move">
