@@ -75,6 +75,7 @@
       scale="3"/>
     <decimal name="yearlyPriceRevalued" title="Price revalued yearly" precision="20"
       scale="3"/>
+    <many-to-one name="pricing" ref="com.axelor.apps.base.db.Pricing" title="Pricing"/>
 
     <finder-method name="findOneBy"
       using="contractVersion, product, productName,
