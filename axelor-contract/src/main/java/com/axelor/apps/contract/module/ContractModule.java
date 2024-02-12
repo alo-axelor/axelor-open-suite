@@ -19,6 +19,7 @@
 package com.axelor.apps.contract.module;
 
 import com.axelor.app.AxelorModule;
+import com.axelor.apps.account.service.AccountManagementServiceAccountImpl;
 import com.axelor.apps.contract.db.repo.AbstractContractRepository;
 import com.axelor.apps.contract.db.repo.ConsumptionLineManagementRepository;
 import com.axelor.apps.contract.db.repo.ConsumptionLineRepository;
@@ -27,6 +28,8 @@ import com.axelor.apps.contract.db.repo.ContractBatchRepository;
 import com.axelor.apps.contract.db.repo.ContractLineManagementRepository;
 import com.axelor.apps.contract.db.repo.ContractLineRepository;
 import com.axelor.apps.contract.db.repo.ContractRepository;
+import com.axelor.apps.contract.service.AccountManagementContractService;
+import com.axelor.apps.contract.service.AccountManagementContractServiceImpl;
 import com.axelor.apps.contract.service.AnalyticMoveLineContractServiceImpl;
 import com.axelor.apps.contract.service.ConsumptionLineService;
 import com.axelor.apps.contract.service.ConsumptionLineServiceImpl;
@@ -40,6 +43,8 @@ import com.axelor.apps.contract.service.ContractService;
 import com.axelor.apps.contract.service.ContractServiceImpl;
 import com.axelor.apps.contract.service.ContractVersionService;
 import com.axelor.apps.contract.service.ContractVersionServiceImpl;
+import com.axelor.apps.contract.service.ContractYerService;
+import com.axelor.apps.contract.service.ContractYerServiceImpl;
 import com.axelor.apps.contract.service.CurrencyScaleServiceContract;
 import com.axelor.apps.contract.service.CurrencyScaleServiceContractImpl;
 import com.axelor.apps.contract.service.IndexRevaluationService;
@@ -80,5 +85,8 @@ public class ContractModule extends AxelorModule {
     bind(CurrencyScaleServiceContract.class).to(CurrencyScaleServiceContractImpl.class);
     bind(InvoiceLinePricingService.class).to(InvoiceLinePricingServiceImpl.class);
     bind(ContractPricingService.class).to(ContractPricingServiceImpl.class);
+    bind(AccountManagementServiceAccountImpl.class).to(AccountManagementContractServiceImpl.class);
+    bind(AccountManagementContractService.class).to(AccountManagementContractServiceImpl.class);
+    bind(ContractYerService.class).to(ContractYerServiceImpl.class);
   }
 }

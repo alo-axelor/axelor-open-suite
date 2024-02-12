@@ -54,6 +54,14 @@ public interface AccountManagementAccountService extends AccountManagementServic
       boolean fixedAsset)
       throws AxelorException;
 
+  Account getProductAccountOnly(
+      Product product,
+      Company company,
+      FiscalPosition fiscalPosition,
+      boolean isPurchase,
+      boolean fixedAsset)
+      throws AxelorException;
+
   /**
    * Get the product analytic distribution template
    *

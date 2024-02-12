@@ -32,7 +32,7 @@ import com.axelor.apps.contract.db.repo.ContractVersionRepository;
 import com.axelor.apps.contract.service.ContractLineService;
 import com.axelor.apps.contract.service.ContractServiceImpl;
 import com.axelor.apps.contract.service.ContractVersionService;
-import com.axelor.apps.contract.service.InvoiceLinePricingService;
+import com.axelor.apps.contract.service.ContractYerService;
 import com.axelor.apps.project.db.Project;
 import com.axelor.apps.supplychain.service.AnalyticLineModelService;
 import com.google.inject.Inject;
@@ -52,7 +52,7 @@ public class ProjectContractServiceImpl extends ContractServiceImpl {
       InvoiceRepository invoiceRepository,
       InvoiceService invoiceService,
       AnalyticLineModelService analyticLineModelService,
-      InvoiceLinePricingService invoiceLinePricingService) {
+      ContractYerService contractYerService) {
     super(
         appBaseService,
         versionService,
@@ -65,7 +65,7 @@ public class ProjectContractServiceImpl extends ContractServiceImpl {
         invoiceRepository,
         invoiceService,
         analyticLineModelService,
-        invoiceLinePricingService);
+        contractYerService);
   }
 
   @Override

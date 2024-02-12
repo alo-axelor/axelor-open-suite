@@ -98,11 +98,8 @@ public class AccountManagementServiceAccountImpl extends AccountManagementServic
           fiscalPosition != null ? fiscalPosition.getCode() : null
         });
 
-    Account generalAccount =
-        this.getProductAccount(product, company, isPurchase, fixedAsset, CONFIG_OBJECT_PRODUCT);
-
     Account account =
-        new FiscalPositionAccountServiceImpl().getAccount(fiscalPosition, generalAccount);
+        getProductAccountOnly(product, company, fiscalPosition, isPurchase, fixedAsset);
 
     if (account != null) {
       return account;
@@ -113,6 +110,20 @@ public class AccountManagementServiceAccountImpl extends AccountManagementServic
         I18n.get(AccountExceptionMessage.ACCOUNT_MANAGEMENT_1_ACCOUNT),
         product != null ? product.getCode() : null,
         company.getName());
+  }
+
+  @Override
+  public Account getProductAccountOnly(
+      Product product,
+      Company company,
+      FiscalPosition fiscalPosition,
+      boolean isPurchase,
+      boolean fixedAsset) {
+
+    Account generalAccount =
+        this.getProductAccount(product, company, isPurchase, fixedAsset, CONFIG_OBJECT_PRODUCT);
+
+    return new FiscalPositionAccountServiceImpl().getAccount(fiscalPosition, generalAccount);
   }
 
   /**

@@ -89,7 +89,7 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
   protected InvoiceRepository invoiceRepository;
   protected InvoiceService invoiceService;
   protected AnalyticLineModelService analyticLineModelService;
-  protected InvoiceLinePricingService invoiceLinePricingService;
+  protected ContractYerService contractYerService;
 
   @Inject
   public ContractServiceImpl(
@@ -104,7 +104,7 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
       InvoiceRepository invoiceRepository,
       InvoiceService invoiceService,
       AnalyticLineModelService analyticLineModelService,
-      InvoiceLinePricingService invoiceLinePricingService) {
+      ContractYerService contractYerService) {
     this.appBaseService = appBaseService;
     this.versionService = versionService;
     this.contractLineService = contractLineService;
@@ -116,7 +116,7 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
     this.invoiceRepository = invoiceRepository;
     this.invoiceService = invoiceService;
     this.analyticLineModelService = analyticLineModelService;
-    this.invoiceLinePricingService = invoiceLinePricingService;
+    this.contractYerService = contractYerService;
   }
 
   @Override
@@ -412,10 +412,7 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
     // Increase invoice period date
     increaseInvoiceDates(contract);
     setRevaluationFormulaDescription(contract, invoice);
-
-    if (isYerContract(contract)) {
-      invoiceLinePricingService.computePricing(invoice);
-    }
+    contractYerService.invoiceYerContract(contract, invoice);
 
     return computeAndSave(invoice);
   }
@@ -900,13 +897,5 @@ public class ContractServiceImpl extends ContractRepository implements ContractS
       }
     }
     contractRepository.save(contract);
-  }
-
-  protected boolean isYerContract(Contract contract) {
-    int targetTypeSelect = contract.getTargetTypeSelect();
-    List<Integer> yerTypes = new ArrayList<>();
-    yerTypes.add(ContractRepository.YER_CUSTOMER_CONTRACT);
-    yerTypes.add(ContractRepository.YER_SUPPLIER_CONTRACT);
-    return yerTypes.contains(targetTypeSelect);
   }
 }

@@ -189,7 +189,8 @@
         <field name="additionalBenefitContractLineList" showIf="isAdditionaBenefitManagement"
           readonlyIf="!id" colSpan="12" form-view="additional-contract-line-form"
           grid-view="additional-contract-line-grid"
-          onChange="action-contract-method-additional-contract-line-list-on-change" hideIf="targetTypeSelect > 2"/>
+          onChange="action-contract-method-additional-contract-line-list-on-change"
+          hideIf="targetTypeSelect > 2"/>
         <panel name="currentContractVersionDescriptionPanel" colSpan="12">
           <field name="currentContractVersion" showTitle="false" colSpan="12"
             x-show-icons="false">
