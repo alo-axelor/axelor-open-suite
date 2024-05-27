@@ -43,7 +43,7 @@ public interface SaleOrderLineService {
    * @param saleOrderLine
    * @param saleOrder
    */
-  void computeProductInformation(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
+  Map<String, Object> computeProductInformation(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
       throws AxelorException;
 
   SaleOrderLine resetProductInformation(SaleOrderLine line);
@@ -64,7 +64,7 @@ public interface SaleOrderLineService {
    * @return
    * @throws AxelorException
    */
-  public Map<String, BigDecimal> computeValues(SaleOrder saleOrder, SaleOrderLine saleOrderLine)
+  Map<String, Object> computeValues(SaleOrder saleOrder, SaleOrderLine saleOrderLine)
       throws AxelorException;
 
   /**
@@ -136,7 +136,8 @@ public interface SaleOrderLineService {
    * @param saleOrder
    * @throws AxelorException
    */
-  public void fillPrice(SaleOrderLine saleOrderLine, SaleOrder saleOrder) throws AxelorException;
+  Map<String, Object> fillPrice(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
+      throws AxelorException;
 
   /**
    * Fill the complementaryProductList of the saleOrderLine from the possible complementary products
@@ -144,7 +145,7 @@ public interface SaleOrderLineService {
    *
    * @param saleOrderLine
    */
-  public void fillComplementaryProductList(SaleOrderLine saleOrderLine);
+  Map<String, Object> fillComplementaryProductList(SaleOrderLine saleOrderLine);
 
   /**
    * Get unique values of type field from pack lines

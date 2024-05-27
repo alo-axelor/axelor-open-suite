@@ -24,10 +24,14 @@ import com.axelor.apps.account.service.analytic.AnalyticMoveLineService;
 import com.axelor.apps.account.service.app.AppAccountService;
 import com.axelor.apps.account.service.config.AccountConfigService;
 import com.axelor.apps.base.AxelorException;
+import com.axelor.apps.base.db.Blocking;
 import com.axelor.apps.base.db.Partner;
 import com.axelor.apps.base.db.Product;
+import com.axelor.apps.base.db.repo.BlockingRepository;
+import com.axelor.apps.base.service.BlockingService;
 import com.axelor.apps.base.service.CurrencyScaleService;
 import com.axelor.apps.base.service.CurrencyService;
+import com.axelor.apps.base.service.InternationalService;
 import com.axelor.apps.base.service.PriceListService;
 import com.axelor.apps.base.service.ProductMultipleQtyService;
 import com.axelor.apps.base.service.app.AppBaseService;
@@ -67,9 +71,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
+import org.apache.commons.collections.CollectionUtils;
 
 public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImpl
     implements SaleOrderLineServiceSupplyChain {
@@ -81,6 +87,7 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
   protected InvoiceLineRepository invoiceLineRepository;
   protected SaleInvoicingStateService saleInvoicingStateService;
   protected AnalyticLineModelService analyticLineModelService;
+  protected BlockingService blockingService;
 
   @Inject
   public SaleOrderLineServiceSupplyChainImpl(
@@ -92,17 +99,19 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
       AccountManagementService accountManagementService,
       SaleOrderLineRepository saleOrderLineRepo,
       SaleOrderService saleOrderService,
+      PricingService pricingService,
+      TaxService taxService,
+      SaleOrderMarginService saleOrderMarginService,
+      CurrencyScaleService currencyScaleService,
+      InternationalService internationalService,
       AppAccountService appAccountService,
       AnalyticMoveLineService analyticMoveLineService,
       AppSupplychainService appSupplychainService,
       AccountConfigService accountConfigService,
-      PricingService pricingService,
-      TaxService taxService,
-      SaleOrderMarginService saleOrderMarginService,
       InvoiceLineRepository invoiceLineRepository,
       SaleInvoicingStateService saleInvoicingStateService,
       AnalyticLineModelService analyticLineModelService,
-      CurrencyScaleService currencyScaleService) {
+      BlockingService blockingService) {
     super(
         currencyService,
         priceListService,
@@ -115,7 +124,8 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
         pricingService,
         taxService,
         saleOrderMarginService,
-        currencyScaleService);
+        currencyScaleService,
+        internationalService);
     this.appAccountService = appAccountService;
     this.analyticMoveLineService = analyticMoveLineService;
     this.appSupplychainService = appSupplychainService;
@@ -123,19 +133,92 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
     this.invoiceLineRepository = invoiceLineRepository;
     this.saleInvoicingStateService = saleInvoicingStateService;
     this.analyticLineModelService = analyticLineModelService;
+    this.blockingService = blockingService;
   }
 
   @Override
-  public void computeProductInformation(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
-      throws AxelorException {
-    super.computeProductInformation(saleOrderLine, saleOrder);
-    saleOrderLine.setSaleSupplySelect(saleOrderLine.getProduct().getSaleSupplySelect());
+  public Map<String, Object> computeProductInformation(
+      SaleOrderLine saleOrderLine, SaleOrder saleOrder) throws AxelorException {
+    Map<String, Object> saleOrderLineMap =
+        super.computeProductInformation(saleOrderLine, saleOrder);
 
     if (appAccountService.isApp("supplychain")) {
       saleOrderLine.setSaleSupplySelect(saleOrderLine.getProduct().getSaleSupplySelect());
+      saleOrderLineMap.put("saleSupplySelect", saleOrderLine.getProduct().getSaleSupplySelect());
+
+      setStandardDelay(saleOrderLine, saleOrderLineMap);
+      setSupplierPartnerDefault(saleOrderLine, saleOrder, saleOrderLineMap);
+      setIsComplementaryProductsUnhandledYet(saleOrderLine, saleOrderLineMap);
 
       AnalyticLineModel analyticLineModel = new AnalyticLineModel(saleOrderLine, saleOrder);
       analyticLineModelService.getAndComputeAnalyticDistribution(analyticLineModel);
+    } else {
+      return saleOrderLineMap;
+    }
+    return saleOrderLineMap;
+  }
+
+  protected void setStandardDelay(
+      SaleOrderLine saleOrderLine, Map<String, Object> saleOrderLineMap) {
+    Integer lineSaleSupplySelect = saleOrderLine.getSaleSupplySelect();
+    switch (lineSaleSupplySelect) {
+      case SaleOrderLineRepository.SALE_SUPPLY_PURCHASE:
+      case SaleOrderLineRepository.SALE_SUPPLY_PRODUCE:
+      case SaleOrderLineRepository.SALE_SUPPLY_FROM_STOCK_AND_PRODUCE:
+        saleOrderLine.setStandardDelay(saleOrderLine.getProduct().getStandardDelay());
+        break;
+      case SaleOrderLineRepository.SALE_SUPPLY_NONE:
+      case SaleOrderLineRepository.SALE_SUPPLY_FROM_STOCK:
+        saleOrderLine.setStandardDelay(0);
+        break;
+      default:
+    }
+    if (saleOrderLineMap != null) {
+      saleOrderLineMap.put("standardDelay", saleOrderLine.getStandardDelay());
+    }
+  }
+
+  protected void setSupplierPartnerDefault(
+      SaleOrderLine saleOrderLine, SaleOrder saleOrder, Map<String, Object> saleOrderLineMap) {
+    if (saleOrderLine.getSaleSupplySelect() != SaleOrderLineRepository.SALE_SUPPLY_PURCHASE) {
+      return;
+    }
+
+    if (saleOrder == null) {
+      return;
+    }
+
+    Partner supplierPartner = null;
+    if (saleOrderLine.getProduct() != null) {
+      supplierPartner = saleOrderLine.getProduct().getDefaultSupplierPartner();
+    }
+
+    if (supplierPartner != null) {
+      Blocking blocking =
+          blockingService.getBlocking(
+              supplierPartner, saleOrder.getCompany(), BlockingRepository.PURCHASE_BLOCKING);
+      if (blocking != null) {
+        supplierPartner = null;
+      }
+    }
+
+    saleOrderLine.setSupplierPartner(supplierPartner);
+
+    if (saleOrderLineMap != null) {
+      saleOrderLineMap.put("supplierPartner", supplierPartner);
+    }
+  }
+
+  public void setIsComplementaryProductsUnhandledYet(
+      SaleOrderLine saleOrderLine, Map<String, Object> saleOrderLineMap) {
+    Product product = saleOrderLine.getProduct();
+
+    if (product != null && CollectionUtils.isNotEmpty(product.getComplementaryProductList())) {
+      saleOrderLine.setIsComplementaryProductsUnhandledYet(true);
+    }
+
+    if (saleOrderLineMap != null) {
+      saleOrderLineMap.put("isComplementaryProductsUnhandledYet", true);
     }
   }
 
