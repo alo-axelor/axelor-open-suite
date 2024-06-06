@@ -813,14 +813,4 @@ public class SaleOrderController {
       TraceBackService.trace(response, e);
     }
   }
-
-  public void saleSupplySelectOnChange(ActionRequest request, ActionResponse response) {
-    try {
-      SaleOrderLine saleOrderLine = request.getContext().asType(SaleOrderLine.class);
-      Map<String, Object> saleOrderLineMap = new HashMap<>();
-
-    } catch (Exception e) {
-      TraceBackService.trace(response, e);
-    }
-  }
 }
