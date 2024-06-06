@@ -7,12 +7,15 @@ import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.db.repo.PriceListLineRepository;
 import com.axelor.apps.base.service.PriceListService;
 import com.axelor.apps.base.service.ProductCategoryService;
+import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.tax.TaxService;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.db.repo.SaleOrderRepository;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,12 +23,93 @@ public class SaleOrderLineDiscountServiceImpl implements SaleOrderLineDiscountSe
 
   protected PriceListService priceListService;
   protected ProductCategoryService productCategoryService;
+  protected SaleOrderLinePriceService saleOrderLinePriceService;
+  protected TaxService taxService;
+  protected AppBaseService appBaseService;
 
   @Inject
   public SaleOrderLineDiscountServiceImpl(
-      PriceListService priceListService, ProductCategoryService productCategoryService) {
+      PriceListService priceListService,
+      ProductCategoryService productCategoryService,
+      SaleOrderLinePriceService saleOrderLinePriceService,
+      TaxService taxService,
+      AppBaseService appBaseService) {
     this.priceListService = priceListService;
     this.productCategoryService = productCategoryService;
+    this.saleOrderLinePriceService = saleOrderLinePriceService;
+    this.taxService = taxService;
+    this.appBaseService = appBaseService;
+  }
+
+  @Override
+  public Map<String, Object> getDiscount(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
+      throws AxelorException {
+    Map<String, Object> saleOrderLineMap = new HashMap<>();
+
+    if (saleOrder == null || saleOrderLine.getProduct() == null) {
+      return saleOrderLineMap;
+    }
+
+    if (saleOrderLine.getProduct().getInAti()) {
+      saleOrderLineMap =
+          getDiscountsFromPriceLists(
+              saleOrder,
+              saleOrderLine,
+              saleOrderLinePriceService.getInTaxUnitPrice(
+                  saleOrder, saleOrderLine, saleOrderLine.getTaxLineSet()));
+    } else {
+      saleOrderLineMap =
+          getDiscountsFromPriceLists(
+              saleOrder,
+              saleOrderLine,
+              saleOrderLinePriceService.getExTaxUnitPrice(
+                  saleOrder, saleOrderLine, saleOrderLine.getTaxLineSet()));
+    }
+
+    if (saleOrderLineMap != null) {
+      BigDecimal price = (BigDecimal) saleOrderLineMap.get("price");
+      if (price != null
+          && price.compareTo(
+                  saleOrderLine.getProduct().getInAti()
+                      ? saleOrderLine.getInTaxPrice()
+                      : saleOrderLine.getPrice())
+              != 0) {
+        if (saleOrderLine.getProduct().getInAti()) {
+          saleOrderLine.setInTaxPrice(price);
+          saleOrderLineMap.put("inTaxPrice", saleOrderLine.getInTaxPrice());
+          saleOrderLine.setPrice(
+              taxService.convertUnitPrice(
+                  true,
+                  saleOrderLine.getTaxLineSet(),
+                  price,
+                  appBaseService.getNbDecimalDigitForUnitPrice()));
+          saleOrderLineMap.put("price", saleOrderLine.getPrice());
+        } else {
+          saleOrderLine.setPrice(price);
+          saleOrderLineMap.put("price", saleOrderLine.getPrice());
+          saleOrderLine.setInTaxPrice(
+              taxService.convertUnitPrice(
+                  false,
+                  saleOrderLine.getTaxLineSet(),
+                  price,
+                  appBaseService.getNbDecimalDigitForUnitPrice()));
+          saleOrderLineMap.put("inTaxPrice", saleOrderLine.getInTaxPrice());
+        }
+      }
+
+      if (saleOrderLine.getProduct().getInAti() != saleOrder.getInAti()
+          && (Integer) saleOrderLineMap.get("discountTypeSelect")
+              != PriceListLineRepository.AMOUNT_TYPE_PERCENT) {
+        saleOrderLine.setDiscountAmount(
+            taxService.convertUnitPrice(
+                saleOrderLine.getProduct().getInAti(),
+                saleOrderLine.getTaxLineSet(),
+                (BigDecimal) saleOrderLineMap.get("discountAmount"),
+                appBaseService.getNbDecimalDigitForUnitPrice()));
+        saleOrderLineMap.put("discountAmount", saleOrderLine.getDiscountAmount());
+      }
+    }
+    return saleOrderLineMap;
   }
 
   @Override
@@ -70,18 +154,6 @@ public class SaleOrderLineDiscountServiceImpl implements SaleOrderLineDiscountSe
     }
 
     return discounts;
-  }
-
-  @Override
-  public int getDiscountTypeSelect(
-      SaleOrder saleOrder, SaleOrderLine saleOrderLine, BigDecimal price) {
-    PriceList priceList = saleOrder.getPriceList();
-    if (priceList != null) {
-      PriceListLine priceListLine = this.getPriceListLine(saleOrderLine, priceList, price);
-
-      return priceListLine.getTypeSelect();
-    }
-    return 0;
   }
 
   @Override

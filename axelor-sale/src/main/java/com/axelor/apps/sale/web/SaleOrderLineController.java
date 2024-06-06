@@ -22,7 +22,6 @@ import com.axelor.apps.account.db.TaxLine;
 import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.base.db.Pricing;
 import com.axelor.apps.base.db.Product;
-import com.axelor.apps.base.db.repo.PriceListLineRepository;
 import com.axelor.apps.base.db.repo.PricingRepository;
 import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.exception.TraceBackService;
@@ -37,7 +36,7 @@ import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDiscountService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDomainService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineMultipleQtyService;
-import com.axelor.apps.sale.service.saleorder.SaleOrderLinePriceService;
+import com.axelor.apps.sale.service.saleorder.SaleOrderLineOnChangeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLinePricingService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineProductService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineService;
@@ -165,93 +164,6 @@ public class SaleOrderLineController {
         "taxEquiv",
         Beans.get(FiscalPositionService.class)
             .getTaxEquivFromTaxLines(saleOrder.getFiscalPosition(), saleOrderLine.getTaxLineSet()));
-  }
-
-  public void getDiscount(ActionRequest request, ActionResponse response) {
-
-    Context context = request.getContext();
-    SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
-    SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
-    SaleOrderLineDiscountService saleOrderLineDiscountService =
-        Beans.get(SaleOrderLineDiscountService.class);
-    SaleOrderLinePriceService saleOrderLinePriceService =
-        Beans.get(SaleOrderLinePriceService.class);
-    TaxService taxService = Beans.get(TaxService.class);
-    AppBaseService appBaseService = Beans.get(AppBaseService.class);
-
-    SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
-
-    if (saleOrder == null || saleOrderLine.getProduct() == null) {
-      return;
-    }
-
-    try {
-
-      Map<String, Object> discounts;
-      if (saleOrderLine.getProduct().getInAti()) {
-        discounts =
-            saleOrderLineDiscountService.getDiscountsFromPriceLists(
-                saleOrder,
-                saleOrderLine,
-                saleOrderLinePriceService.getInTaxUnitPrice(
-                    saleOrder, saleOrderLine, saleOrderLine.getTaxLineSet()));
-      } else {
-        discounts =
-            saleOrderLineDiscountService.getDiscountsFromPriceLists(
-                saleOrder,
-                saleOrderLine,
-                saleOrderLinePriceService.getExTaxUnitPrice(
-                    saleOrder, saleOrderLine, saleOrderLine.getTaxLineSet()));
-      }
-
-      if (discounts != null) {
-        BigDecimal price = (BigDecimal) discounts.get("price");
-        if (price != null
-            && price.compareTo(
-                    saleOrderLine.getProduct().getInAti()
-                        ? saleOrderLine.getInTaxPrice()
-                        : saleOrderLine.getPrice())
-                != 0) {
-          if (saleOrderLine.getProduct().getInAti()) {
-            response.setValue("inTaxPrice", price);
-            response.setValue(
-                "price",
-                taxService.convertUnitPrice(
-                    true,
-                    saleOrderLine.getTaxLineSet(),
-                    price,
-                    appBaseService.getNbDecimalDigitForUnitPrice()));
-          } else {
-            response.setValue("price", price);
-            response.setValue(
-                "inTaxPrice",
-                taxService.convertUnitPrice(
-                    false,
-                    saleOrderLine.getTaxLineSet(),
-                    price,
-                    appBaseService.getNbDecimalDigitForUnitPrice()));
-          }
-        }
-
-        if (saleOrderLine.getProduct().getInAti() != saleOrder.getInAti()
-            && (Integer) discounts.get("discountTypeSelect")
-                != PriceListLineRepository.AMOUNT_TYPE_PERCENT) {
-          response.setValue(
-              "discountAmount",
-              taxService.convertUnitPrice(
-                  saleOrderLine.getProduct().getInAti(),
-                  saleOrderLine.getTaxLineSet(),
-                  (BigDecimal) discounts.get("discountAmount"),
-                  appBaseService.getNbDecimalDigitForUnitPrice()));
-        } else {
-          response.setValue("discountAmount", discounts.get("discountAmount"));
-        }
-        response.setValue("discountTypeSelect", discounts.get("discountTypeSelect"));
-      }
-
-    } catch (Exception e) {
-      response.setInfo(e.getMessage());
-    }
   }
 
   /**
@@ -428,18 +340,15 @@ public class SaleOrderLineController {
     }
   }
 
-  public void computePricingScale(ActionRequest request, ActionResponse response) {
-    try {
-      Context context = request.getContext();
-      SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
-      SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
-      SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
-      Beans.get(SaleOrderLinePricingService.class).computePricingScale(saleOrderLine, saleOrder);
+  public void qtyOnChange(ActionRequest request, ActionResponse response) throws AxelorException {
+    Context context = request.getContext();
+    SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
+    SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
+    SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
 
-      response.setValues(saleOrderLine);
-
-    } catch (Exception e) {
-      TraceBackService.trace(response, e);
-    }
+    Map<String, Object> saleOrderLineMap =
+        Beans.get(SaleOrderLineOnChangeService.class).qtyOnChange(saleOrderLine, saleOrder);
+    response.setValues(saleOrderLine); // Exception because of pricing ?
+    response.setValues(saleOrderLineMap);
   }
 }
