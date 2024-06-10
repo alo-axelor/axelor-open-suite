@@ -145,6 +145,7 @@ public class SaleOrderLineProductSupplychainServiceImpl extends SaleOrderLinePro
     return saleOrderLineMap;
   }
 
+  @Override
   public Map<String, Object> setIsComplementaryProductsUnhandledYet(SaleOrderLine saleOrderLine) {
     Product product = saleOrderLine.getProduct();
 
