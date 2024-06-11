@@ -333,8 +333,18 @@ public class SaleOrderLineController {
     SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
     SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
     Map<String, Object> saleOrderLineMap =
-        Beans.get(SaleOrderLineOnChangeService.class)
-            .discountTypeSelectOnChange(saleOrderLine, saleOrder);
+        Beans.get(SaleOrderLineOnChangeService.class).compute(saleOrderLine, saleOrder);
+    response.setValues(saleOrderLineMap);
+  }
+
+  public void discountAmountOnChange(ActionRequest request, ActionResponse response)
+      throws AxelorException {
+    Context context = request.getContext();
+    SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
+    SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
+    SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
+    Map<String, Object> saleOrderLineMap =
+        Beans.get(SaleOrderLineOnChangeService.class).compute(saleOrderLine, saleOrder);
     response.setValues(saleOrderLineMap);
   }
 }
