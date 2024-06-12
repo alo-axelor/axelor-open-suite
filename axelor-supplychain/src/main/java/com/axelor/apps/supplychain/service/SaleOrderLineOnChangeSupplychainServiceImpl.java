@@ -4,6 +4,7 @@ import com.axelor.apps.account.service.app.AppAccountService;
 import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
+import com.axelor.apps.sale.service.saleorder.SaleOrderLineComplementaryProductService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDiscountService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineOnChangeServiceImpl;
@@ -32,6 +33,7 @@ public class SaleOrderLineOnChangeSupplychainServiceImpl extends SaleOrderLineOn
       SaleOrderLineTaxService saleOrderLineTaxService,
       SaleOrderLinePriceService saleOrderLinePriceService,
       SaleOrderLineService saleOrderLineService,
+      SaleOrderLineComplementaryProductService saleOrderLineComplementaryProductService,
       AnalyticLineModelService analyticLineModelService,
       AppAccountService appAccountService,
       SaleOrderLineServiceSupplyChain saleOrderLineServiceSupplyChain,
@@ -42,7 +44,8 @@ public class SaleOrderLineOnChangeSupplychainServiceImpl extends SaleOrderLineOn
         saleOrderLineComputeService,
         saleOrderLineTaxService,
         saleOrderLinePriceService,
-        saleOrderLineService);
+        saleOrderLineService,
+        saleOrderLineComplementaryProductService);
     this.analyticLineModelService = analyticLineModelService;
     this.appAccountService = appAccountService;
     this.saleOrderLineServiceSupplyChain = saleOrderLineServiceSupplyChain;
@@ -59,9 +62,6 @@ public class SaleOrderLineOnChangeSupplychainServiceImpl extends SaleOrderLineOn
       saleOrderLineMap.putAll(
           saleOrderLineServiceSupplyChain.updateRequestedReservedQty(saleOrderLine));
     }
-    saleOrderLineMap.putAll(
-        saleOrderLineProductSupplychainService.setIsComplementaryProductsUnhandledYet(
-            saleOrderLine));
 
     return saleOrderLineMap;
   }

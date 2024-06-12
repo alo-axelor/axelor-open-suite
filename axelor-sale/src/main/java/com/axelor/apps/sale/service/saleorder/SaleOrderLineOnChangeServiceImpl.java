@@ -16,6 +16,7 @@ public class SaleOrderLineOnChangeServiceImpl implements SaleOrderLineOnChangeSe
   protected SaleOrderLineTaxService saleOrderLineTaxService;
   protected SaleOrderLinePriceService saleOrderLinePriceService;
   protected SaleOrderLineService saleOrderLineService;
+  protected SaleOrderLineComplementaryProductService saleOrderLineComplementaryProductService;
 
   @Inject
   public SaleOrderLineOnChangeServiceImpl(
@@ -23,12 +24,14 @@ public class SaleOrderLineOnChangeServiceImpl implements SaleOrderLineOnChangeSe
       SaleOrderLineComputeService saleOrderLineComputeService,
       SaleOrderLineTaxService saleOrderLineTaxService,
       SaleOrderLinePriceService saleOrderLinePriceService,
-      SaleOrderLineService saleOrderLineService) {
+      SaleOrderLineService saleOrderLineService,
+      SaleOrderLineComplementaryProductService saleOrderLineComplementaryProductService) {
     this.saleOrderLineDiscountService = saleOrderLineDiscountService;
     this.saleOrderLineComputeService = saleOrderLineComputeService;
     this.saleOrderLineTaxService = saleOrderLineTaxService;
     this.saleOrderLinePriceService = saleOrderLinePriceService;
     this.saleOrderLineService = saleOrderLineService;
+    this.saleOrderLineComplementaryProductService = saleOrderLineComplementaryProductService;
   }
 
   @Override
@@ -37,6 +40,9 @@ public class SaleOrderLineOnChangeServiceImpl implements SaleOrderLineOnChangeSe
     Map<String, Object> saleOrderLineMap = new HashMap<>();
     saleOrderLineMap.putAll(saleOrderLineDiscountService.getDiscount(saleOrderLine, saleOrder));
     saleOrderLineMap.putAll(compute(saleOrderLine, saleOrder));
+    saleOrderLineMap.putAll(
+        saleOrderLineComplementaryProductService.setIsComplementaryProductsUnhandledYet(
+            saleOrderLine));
 
     return saleOrderLineMap;
   }
