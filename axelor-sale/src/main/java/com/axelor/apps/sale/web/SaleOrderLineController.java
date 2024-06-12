@@ -27,7 +27,6 @@ import com.axelor.apps.base.service.exception.TraceBackService;
 import com.axelor.apps.base.service.pricing.PricingService;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
-import com.axelor.apps.sale.db.repo.SaleOrderLineRepository;
 import com.axelor.apps.sale.exception.SaleExceptionMessage;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDiscountService;
@@ -38,8 +37,6 @@ import com.axelor.apps.sale.service.saleorder.SaleOrderLinePricingService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineProductService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderMarginService;
-import com.axelor.apps.sale.translation.ITranslation;
-import com.axelor.db.mapper.Mapper;
 import com.axelor.i18n.I18n;
 import com.axelor.inject.Beans;
 import com.axelor.rpc.ActionRequest;
@@ -158,19 +155,10 @@ public class SaleOrderLineController {
     response.setValues(saleOrderLineMap);
   }
 
-  public void emptyLine(ActionRequest request, ActionResponse response) {
+  public void typeSelectOnChange(ActionRequest request, ActionResponse response) {
     SaleOrderLine saleOrderLine = request.getContext().asType(SaleOrderLine.class);
-    if (saleOrderLine.getTypeSelect() != SaleOrderLineRepository.TYPE_NORMAL) {
-      Map<String, Object> newSaleOrderLine = Mapper.toMap(new SaleOrderLine());
-      newSaleOrderLine.put("qty", BigDecimal.ZERO);
-      newSaleOrderLine.put("id", saleOrderLine.getId());
-      newSaleOrderLine.put("version", saleOrderLine.getVersion());
-      newSaleOrderLine.put("typeSelect", saleOrderLine.getTypeSelect());
-      if (saleOrderLine.getTypeSelect() == SaleOrderLineRepository.TYPE_END_OF_PACK) {
-        newSaleOrderLine.put("productName", I18n.get(ITranslation.SALE_ORDER_LINE_END_OF_PACK));
-      }
-      response.setValues(newSaleOrderLine);
-    }
+    response.setValues(
+        Beans.get(SaleOrderLineOnChangeService.class).typeSelectOnChange(saleOrderLine));
   }
 
   public void checkQty(ActionRequest request, ActionResponse response) {

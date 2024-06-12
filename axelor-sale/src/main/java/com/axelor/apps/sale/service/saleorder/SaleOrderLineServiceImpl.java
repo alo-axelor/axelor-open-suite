@@ -20,7 +20,10 @@ package com.axelor.apps.sale.service.saleorder;
 
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
+import com.axelor.db.mapper.Mapper;
 import com.axelor.rpc.Context;
+import java.math.BigDecimal;
+import java.util.Map;
 
 public class SaleOrderLineServiceImpl implements SaleOrderLineService {
 
@@ -41,5 +44,15 @@ public class SaleOrderLineServiceImpl implements SaleOrderLineService {
     }
 
     return saleOrder;
+  }
+
+  @Override
+  public Map<String, Object> emptyLine(SaleOrderLine saleOrderLine) {
+    Map<String, Object> newSaleOrderLine = Mapper.toMap(new SaleOrderLine());
+    newSaleOrderLine.put("qty", BigDecimal.ZERO);
+    newSaleOrderLine.put("id", saleOrderLine.getId());
+    newSaleOrderLine.put("version", saleOrderLine.getVersion());
+    newSaleOrderLine.put("typeSelect", saleOrderLine.getTypeSelect());
+    return newSaleOrderLine;
   }
 }
