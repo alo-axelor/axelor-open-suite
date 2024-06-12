@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.commons.collections.MapUtils;
 
 public class SaleOrderLineDiscountServiceImpl implements SaleOrderLineDiscountService {
 
@@ -206,7 +207,7 @@ public class SaleOrderLineDiscountServiceImpl implements SaleOrderLineDiscountSe
 
     Map<String, Object> saleOrderLineMap = new HashMap<>();
 
-    if (discounts != null) {
+    if (MapUtils.isNotEmpty(discounts)) {
       if (saleOrderLine.getProduct().getInAti() != saleOrder.getInAti()
           && (Integer) discounts.get("discountTypeSelect")
               != PriceListLineRepository.AMOUNT_TYPE_PERCENT) {
