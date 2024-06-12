@@ -157,4 +157,13 @@ public class SaleOrderLineProductSupplychainServiceImpl extends SaleOrderLinePro
 
     return saleOrderLineMap;
   }
+
+  @Override
+  public Map<String, Object> resetProductInformation(SaleOrderLine line) {
+    Map<String, Object> saleOrderLineMap = super.resetProductInformation(line);
+    line.setSaleSupplySelect(null);
+    saleOrderLineMap.put("saleSupplySelect", line.getSaleSupplySelect());
+
+    return saleOrderLineMap;
+  }
 }
