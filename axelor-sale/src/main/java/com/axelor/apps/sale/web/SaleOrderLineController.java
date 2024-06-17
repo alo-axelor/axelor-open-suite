@@ -28,6 +28,7 @@ import com.axelor.apps.base.service.pricing.PricingService;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.exception.SaleExceptionMessage;
+import com.axelor.apps.sale.service.observer.SaleOrderLineFireService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComplementaryProductService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDiscountService;
@@ -59,7 +60,7 @@ public class SaleOrderLineController {
     SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
     SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
     response.setAttrs(
-        Beans.get(SaleOrderLineViewService.class).getOnNewAttrs(saleOrderLine, saleOrder));
+        Beans.get(SaleOrderLineFireService.class).getOnNewAttrs(saleOrderLine, saleOrder));
     response.setValues(
         Beans.get(SaleOrderLineDummyService.class).getOnNewDummies(saleOrderLine, saleOrder));
   }
@@ -70,7 +71,7 @@ public class SaleOrderLineController {
     SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
     SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
     response.setAttrs(
-        Beans.get(SaleOrderLineViewService.class).getOnLoadAttrs(saleOrderLine, saleOrder));
+        Beans.get(SaleOrderLineFireService.class).getOnLoadAttrs(saleOrderLine, saleOrder));
     response.setValues(
         Beans.get(SaleOrderLineDummyService.class).getOnLoadDummies(saleOrderLine, saleOrder));
   }
@@ -293,7 +294,8 @@ public class SaleOrderLineController {
     Map<String, Object> saleOrderLineMap =
         Beans.get(SaleOrderLineOnChangeService.class).compute(saleOrderLine, saleOrder);
     response.setAttrs(
-        Beans.get(SaleOrderLineViewService.class).hidePriceDiscounted(saleOrder, saleOrderLine));
+        Beans.get(SaleOrderLineViewService.class)
+            .getDiscountTypeSelectOnChangeAttrs(saleOrderLine, saleOrder));
     response.setValues(saleOrderLineMap);
   }
 
@@ -317,5 +319,9 @@ public class SaleOrderLineController {
     response.setValues(
         Beans.get(SaleOrderLineComplementaryProductService.class)
             .setIsComplementaryProductsUnhandledYet(saleOrderLine));
+  }
+
+  public void setScaleForPriceAndQty(ActionRequest request, ActionResponse response) {
+    response.setAttrs(Beans.get(SaleOrderLineViewService.class).getPriceAndQtyScale());
   }
 }

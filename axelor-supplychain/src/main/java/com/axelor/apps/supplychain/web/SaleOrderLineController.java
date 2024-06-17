@@ -492,4 +492,12 @@ public class SaleOrderLineController {
         Beans.get(SaleOrderLineDomainSupplychainService.class)
             .getAnalyticDistributionTemplateDomain(saleOrder));
   }
+
+  public void setDistributionLineReadonly(ActionRequest request, ActionResponse response) {
+    Context context = request.getContext();
+    SaleOrder saleOrder = Beans.get(SaleOrderLineService.class).getSaleOrder(context);
+    response.setAttrs(
+        Beans.get(SaleOrderLineViewSupplychainService.class)
+            .setDistributionLineReadonly(saleOrder));
+  }
 }
