@@ -20,8 +20,20 @@ public class SaleOrderLineViewProductionServiceImpl extends SaleOrderLineViewSup
     implements SaleOrderLineViewProductionService {
 
   @Inject
-  public SaleOrderLineViewProductionServiceImpl(AppBaseService appBaseService, AppSaleService appSaleService, AnalyticAttrsService analyticAttrsService, AnalyticAttrsSupplychainService analyticAttrsSupplychainService, AppSupplychainService appSupplychainService, AccountConfigRepository accountConfigRepository) {
-    super(appBaseService, appSaleService, analyticAttrsService, analyticAttrsSupplychainService, appSupplychainService, accountConfigRepository);
+  public SaleOrderLineViewProductionServiceImpl(
+      AppBaseService appBaseService,
+      AppSaleService appSaleService,
+      AnalyticAttrsService analyticAttrsService,
+      AnalyticAttrsSupplychainService analyticAttrsSupplychainService,
+      AppSupplychainService appSupplychainService,
+      AccountConfigRepository accountConfigRepository) {
+    super(
+        appBaseService,
+        appSaleService,
+        analyticAttrsService,
+        analyticAttrsSupplychainService,
+        appSupplychainService,
+        accountConfigRepository);
   }
 
   @Override

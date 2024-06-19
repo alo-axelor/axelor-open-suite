@@ -6,7 +6,6 @@ import com.axelor.apps.sale.service.event.SaleOrderLineViewOnLoad;
 import com.axelor.apps.sale.service.event.SaleOrderLineViewOnNew;
 import com.axelor.event.Event;
 import com.google.inject.Inject;
-
 import java.util.Map;
 
 public class SaleOrderLineFireServiceImpl implements SaleOrderLineFireService {

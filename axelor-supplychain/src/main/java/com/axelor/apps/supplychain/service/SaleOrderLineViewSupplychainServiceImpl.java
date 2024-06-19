@@ -32,7 +32,13 @@ public class SaleOrderLineViewSupplychainServiceImpl extends SaleOrderLineViewSe
   protected AccountConfigRepository accountConfigRepository;
 
   @Inject
-  public SaleOrderLineViewSupplychainServiceImpl(AppBaseService appBaseService, AppSaleService appSaleService, AnalyticAttrsService analyticAttrsService, AnalyticAttrsSupplychainService analyticAttrsSupplychainService, AppSupplychainService appSupplychainService, AccountConfigRepository accountConfigRepository) {
+  public SaleOrderLineViewSupplychainServiceImpl(
+      AppBaseService appBaseService,
+      AppSaleService appSaleService,
+      AnalyticAttrsService analyticAttrsService,
+      AnalyticAttrsSupplychainService analyticAttrsSupplychainService,
+      AppSupplychainService appSupplychainService,
+      AccountConfigRepository accountConfigRepository) {
     super(appBaseService, appSaleService);
     this.analyticAttrsService = analyticAttrsService;
     this.analyticAttrsSupplychainService = analyticAttrsSupplychainService;

@@ -14,7 +14,6 @@ import com.axelor.i18n.I18n;
 import com.axelor.studio.db.AppBase;
 import com.axelor.studio.db.AppSale;
 import com.google.inject.Inject;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +33,8 @@ public class SaleOrderLineViewServiceImpl implements SaleOrderLineViewService {
   protected AppSaleService appSaleService;
 
   @Inject
-  public SaleOrderLineViewServiceImpl(AppBaseService appBaseService, AppSaleService appSaleService) {
+  public SaleOrderLineViewServiceImpl(
+      AppBaseService appBaseService, AppSaleService appSaleService) {
     this.appBaseService = appBaseService;
     this.appSaleService = appSaleService;
   }
@@ -164,6 +164,13 @@ public class SaleOrderLineViewServiceImpl implements SaleOrderLineViewService {
     attrs.put("reservedQty", Map.of(SCALE_ATTR, scaleForQty));
     attrs.put("deliveredQty", Map.of(SCALE_ATTR, scaleForQty));
 
+    return attrs;
+  }
+
+  @Override
+  public Map<String, Map<String, Object>> focusProduct() {
+    Map<String, Map<String, Object>> attrs = new HashMap<>();
+    attrs.put("product", Map.of("focus", true));
     return attrs;
   }
 
