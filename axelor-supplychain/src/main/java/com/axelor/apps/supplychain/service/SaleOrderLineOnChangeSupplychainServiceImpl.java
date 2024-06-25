@@ -62,6 +62,7 @@ public class SaleOrderLineOnChangeSupplychainServiceImpl extends SaleOrderLineOn
       saleOrderLineMap.putAll(
           saleOrderLineServiceSupplyChain.updateRequestedReservedQty(saleOrderLine));
     }
+    saleOrderLineMap.putAll(checkInvoicedOrDeliveredOrderQty(saleOrderLine, saleOrder));
 
     return saleOrderLineMap;
   }
@@ -91,6 +92,18 @@ public class SaleOrderLineOnChangeSupplychainServiceImpl extends SaleOrderLineOn
           "analyticDistributionTemplate", analyticLineModel.getAnalyticDistributionTemplate());
       saleOrderLineMap.put("analyticMoveLineList", analyticLineModel.getAnalyticMoveLineList());
     }
+    return saleOrderLineMap;
+  }
+
+  protected Map<String, Object> checkInvoicedOrDeliveredOrderQty(
+      SaleOrderLine saleOrderLine, SaleOrder saleOrder) throws AxelorException {
+    Map<String, Object> saleOrderLineMap = super.compute(saleOrderLine, saleOrder);
+    saleOrderLineMap.put(
+        "qty",
+        saleOrderLineServiceSupplyChain.checkInvoicedOrDeliveredOrderQty(saleOrderLine, saleOrder));
+    saleOrderLineServiceSupplyChain.updateDeliveryState(saleOrderLine);
+    saleOrderLineMap.put("deliveryState", saleOrderLine.getDeliveryState());
+
     return saleOrderLineMap;
   }
 }

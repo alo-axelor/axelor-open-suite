@@ -54,6 +54,7 @@ import com.axelor.apps.sale.service.PartnerSaleServiceImpl;
 import com.axelor.apps.sale.service.saleorder.OpportunitySaleOrderServiceImpl;
 import com.axelor.apps.sale.service.saleorder.SaleOrderComputeServiceImpl;
 import com.axelor.apps.sale.service.saleorder.SaleOrderCreateServiceImpl;
+import com.axelor.apps.sale.service.saleorder.SaleOrderLineCheckServiceImpl;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeServiceImpl;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineCreateServiceImpl;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDummyServiceImpl;
@@ -170,6 +171,8 @@ import com.axelor.apps.supplychain.service.SaleOrderCreateServiceSupplychainImpl
 import com.axelor.apps.supplychain.service.SaleOrderCreateSupplychainService;
 import com.axelor.apps.supplychain.service.SaleOrderInvoiceService;
 import com.axelor.apps.supplychain.service.SaleOrderInvoiceServiceImpl;
+import com.axelor.apps.supplychain.service.SaleOrderLineCheckSupplychainService;
+import com.axelor.apps.supplychain.service.SaleOrderLineCheckSupplychainServiceImpl;
 import com.axelor.apps.supplychain.service.SaleOrderLineComputeSupplychainServiceImpl;
 import com.axelor.apps.supplychain.service.SaleOrderLineCreateSupplychainServiceImpl;
 import com.axelor.apps.supplychain.service.SaleOrderLineDomainSupplychainService;
@@ -412,5 +415,8 @@ public class SupplychainModule extends AxelorModule {
         .to(SaleOrderLineInitValueSupplychainServiceImpl.class);
     bind(SaleOrderLineInitValueServiceImpl.class)
         .to(SaleOrderLineInitValueSupplychainServiceImpl.class);
+    bind(SaleOrderLineCheckSupplychainService.class)
+        .to(SaleOrderLineCheckSupplychainServiceImpl.class);
+    bind(SaleOrderLineCheckServiceImpl.class).to(SaleOrderLineCheckSupplychainServiceImpl.class);
   }
 }

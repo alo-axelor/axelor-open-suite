@@ -29,6 +29,7 @@ import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.exception.SaleExceptionMessage;
 import com.axelor.apps.sale.service.observer.SaleOrderLineFireService;
+import com.axelor.apps.sale.service.saleorder.SaleOrderLineCheckService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComplementaryProductService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineComputeService;
 import com.axelor.apps.sale.service.saleorder.SaleOrderLineDomainService;
@@ -64,8 +65,10 @@ public class SaleOrderLineController {
         Beans.get(SaleOrderLineFireService.class).getOnNewAttrs(saleOrderLine, saleOrder));
 
     Map<String, Object> saleOrderLineMap = new HashMap<>();
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineDummyService.class).getOnNewDummies(saleOrderLine, saleOrder));
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineInitValueService.class).onNewInitValues(saleOrder, saleOrderLine));
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineDummyService.class).getOnNewDummies(saleOrderLine, saleOrder));
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineInitValueService.class).onNewInitValues(saleOrder, saleOrderLine));
     response.setValues(saleOrderLineMap);
   }
 
@@ -78,9 +81,14 @@ public class SaleOrderLineController {
         Beans.get(SaleOrderLineFireService.class).getOnLoadAttrs(saleOrderLine, saleOrder));
 
     Map<String, Object> saleOrderLineMap = new HashMap<>();
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineDummyService.class).getOnLoadDummies(saleOrderLine, saleOrder));
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineInitValueService.class).onLoadInitValues(saleOrder, saleOrderLine));
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineDummyService.class).getOnLoadDummies(saleOrderLine, saleOrder));
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineInitValueService.class).onLoadInitValues(saleOrder, saleOrderLine));
     response.setValues(saleOrderLineMap);
+
+    // Check
+    Beans.get(SaleOrderLineMultipleQtyService.class).checkMultipleQty(saleOrderLine, response);
   }
 
   public void onNewEditable(ActionRequest request, ActionResponse response) throws AxelorException {
@@ -91,9 +99,11 @@ public class SaleOrderLineController {
     response.setAttrs(Beans.get(SaleOrderLineViewService.class).focusProduct());
 
     Map<String, Object> saleOrderLineMap = new HashMap<>();
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineDummyService.class)
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineDummyService.class)
             .getOnNewEditableDummies(saleOrderLine, saleOrder));
-    saleOrderLineMap.putAll(Beans.get(SaleOrderLineInitValueService.class)
+    saleOrderLineMap.putAll(
+        Beans.get(SaleOrderLineInitValueService.class)
             .onNewEditableInitValues(saleOrder, saleOrderLine));
     response.setValues(saleOrderLineMap);
   }
@@ -139,13 +149,16 @@ public class SaleOrderLineController {
             saleOrderLineProductService.computeProductInformation(saleOrderLine, saleOrder);
         saleOrderLineMap.putAll(
             Beans.get(SaleOrderLineComputeService.class).computeValues(saleOrder, saleOrderLine));
-        // Beans.get(SaleOrderLineCheckService.class).check(saleOrderLine); throws exception
         response.setValues(
             Beans.get(SaleOrderLineDummyService.class)
                 .getOnProductChangeDummies(saleOrderLine, saleOrder));
         response.setAttrs(
             Beans.get(SaleOrderLineViewService.class)
                 .getProductOnChangeAttrs(saleOrderLine, saleOrder));
+
+        // Check
+        Beans.get(SaleOrderLineMultipleQtyService.class).checkMultipleQty(saleOrderLine, response);
+        Beans.get(SaleOrderLineCheckService.class).productOnChangeCheck(saleOrderLine, saleOrder);
 
         if (Beans.get(AppBaseService.class).getAppBase().getEnablePricingScale()) {
           Optional<Pricing> defaultPricing =
@@ -164,7 +177,8 @@ public class SaleOrderLineController {
                     defaultPricing.get().getName()));
           }
         }
-        saleOrderLineMap.putAll(Beans.get(SaleOrderLineFireService.class)
+        saleOrderLineMap.putAll(
+            Beans.get(SaleOrderLineFireService.class)
                 .getOnProductChangeValues(saleOrderLine, saleOrder));
         response.setValues(saleOrderLineMap);
 
@@ -277,6 +291,10 @@ public class SaleOrderLineController {
     response.setAttrs(
         Beans.get(SaleOrderLineViewService.class).hidePriceDiscounted(saleOrder, saleOrderLine));
     response.setValues(saleOrderLineMap);
+
+    // Check
+    Beans.get(SaleOrderLineMultipleQtyService.class).checkMultipleQty(saleOrderLine, response);
+    Beans.get(SaleOrderLineCheckService.class).qtyOnChangeCheck(saleOrderLine, saleOrder);
   }
 
   public void taxLineOnChange(ActionRequest request, ActionResponse response)
@@ -331,5 +349,13 @@ public class SaleOrderLineController {
 
   public void setScaleForPriceAndQty(ActionRequest request, ActionResponse response) {
     response.setAttrs(Beans.get(SaleOrderLineViewService.class).getPriceAndQtyScale());
+  }
+
+  public void unitOnChange(ActionRequest request, ActionResponse response) throws AxelorException {
+    Context context = request.getContext();
+    SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
+    SaleOrderLineService saleOrderLineService = Beans.get(SaleOrderLineService.class);
+    SaleOrder saleOrder = saleOrderLineService.getSaleOrder(context);
+    Beans.get(SaleOrderLineCheckService.class).unitOnChangeCheck(saleOrderLine, saleOrder);
   }
 }

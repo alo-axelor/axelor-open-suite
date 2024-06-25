@@ -182,10 +182,16 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
   }
 
   @Override
-  public BigDecimal checkInvoicedOrDeliveredOrderQty(SaleOrderLine saleOrderLine) {
+  public BigDecimal checkInvoicedOrDeliveredOrderQty(
+      SaleOrderLine saleOrderLine, SaleOrder saleOrder) {
     BigDecimal qty = saleOrderLine.getQty();
     BigDecimal deliveredQty = saleOrderLine.getDeliveredQty();
     BigDecimal invoicedQty = getInvoicedQty(saleOrderLine);
+
+    if (appSupplychainService.isApp("supplychain")
+        && saleOrder.getStatusSelect() == SaleOrderRepository.STATUS_ORDER_CONFIRMED) {
+      return qty;
+    }
 
     if (qty.compareTo(invoicedQty) < 0 && invoicedQty.compareTo(deliveredQty) > 0) {
       return invoicedQty;
