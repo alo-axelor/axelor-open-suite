@@ -18,13 +18,15 @@ public class SaleOrderLineCheckSupplychainServiceImpl extends SaleOrderLineCheck
   protected StockLocationLineService stockLocationLineService;
   protected AppSupplychainService appSupplychainService;
 
-    @Inject
-    public SaleOrderLineCheckSupplychainServiceImpl(StockLocationLineService stockLocationLineService, AppSupplychainService appSupplychainService) {
-        this.stockLocationLineService = stockLocationLineService;
-        this.appSupplychainService = appSupplychainService;
-    }
+  @Inject
+  public SaleOrderLineCheckSupplychainServiceImpl(
+      StockLocationLineService stockLocationLineService,
+      AppSupplychainService appSupplychainService) {
+    this.stockLocationLineService = stockLocationLineService;
+    this.appSupplychainService = appSupplychainService;
+  }
 
-    @Override
+  @Override
   public void productOnChangeCheck(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
       throws AxelorException {
     super.productOnChangeCheck(saleOrderLine, saleOrder);

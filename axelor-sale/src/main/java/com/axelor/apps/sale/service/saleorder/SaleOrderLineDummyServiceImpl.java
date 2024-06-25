@@ -38,6 +38,7 @@ public class SaleOrderLineDummyServiceImpl implements SaleOrderLineDummyService 
     dummyFields.putAll(initDecimals(saleOrder));
     dummyFields.putAll(initCompanyCurrency(saleOrder, saleOrderLine));
     dummyFields.putAll(initReadonlyDummy(saleOrder, saleOrderLine));
+    dummyFields.putAll(initCurrencySymbol(saleOrder));
     return dummyFields;
   }
 
@@ -51,6 +52,7 @@ public class SaleOrderLineDummyServiceImpl implements SaleOrderLineDummyService 
     dummyFields.putAll(initCompanyCurrency(saleOrder, saleOrderLine));
     dummyFields.putAll(fillMaxDiscount(saleOrder, saleOrderLine));
     dummyFields.putAll(initReadonlyDummy(saleOrder, saleOrderLine));
+    dummyFields.putAll(initCurrencySymbol(saleOrder));
     return dummyFields;
   }
 
@@ -163,6 +165,24 @@ public class SaleOrderLineDummyServiceImpl implements SaleOrderLineDummyService 
         "$isReadOnly",
         statusSelect != SaleOrderRepository.STATUS_DRAFT_QUOTATION
             && !saleOrder.getOrderBeingEdited());
+    return dummyFields;
+  }
+
+  protected Map<String, Object> initCurrencySymbol(SaleOrder saleOrder) {
+    Map<String, Object> dummyFields = new HashMap<>();
+    String currencySymbol =
+        Optional.ofNullable(saleOrder.getCompany())
+            .map(Company::getCurrency)
+            .map(Currency::getSymbol)
+            .orElse("");
+    Integer companyCurrencyScale =
+        Optional.ofNullable(saleOrder.getCompany())
+            .map(Company::getCurrency)
+            .map(Currency::getNumberOfDecimals)
+            .orElse(appBaseService.getNbDecimalDigitForUnitPrice());
+
+    dummyFields.put("$currencySymbol", currencySymbol);
+    dummyFields.put("$companyCurrencyScale", companyCurrencyScale);
     return dummyFields;
   }
 }
