@@ -94,4 +94,6 @@ public interface SaleOrderLineServiceSupplyChain extends SaleOrderLineService {
   void updateStockMoveReservationDateTime(SaleOrderLine saleOrderLine) throws AxelorException;
 
   Map<String, Object> updateRequestedReservedQty(SaleOrderLine saleOrderLine);
+
+  Map<String, Object> maxRequestedReservedQty(SaleOrderLine saleOrderLine);
 }

@@ -244,6 +244,18 @@ public class SaleOrderLineServiceSupplyChainImpl extends SaleOrderLineServiceImp
     return saleOrderLineMap;
   }
 
+  @Override
+  public Map<String, Object> maxRequestedReservedQty(SaleOrderLine saleOrderLine) {
+    Map<String, Object> saleOrderLineMap = new HashMap<>();
+    BigDecimal qty = saleOrderLine.getQty();
+    BigDecimal requestedReservedQty = saleOrderLine.getRequestedReservedQty();
+    if (requestedReservedQty.compareTo(qty) > 0) {
+      saleOrderLine.setRequestedReservedQty(qty);
+      saleOrderLineMap.put("requestedReservedQty", saleOrderLine.getRequestedReservedQty());
+    }
+    return saleOrderLineMap;
+  }
+
   protected BigDecimal getInvoicedQty(SaleOrderLine saleOrderLine) {
 
     TypedQuery<BigDecimal> query =

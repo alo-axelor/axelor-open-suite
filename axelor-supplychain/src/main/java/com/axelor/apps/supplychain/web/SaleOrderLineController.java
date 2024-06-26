@@ -445,4 +445,10 @@ public class SaleOrderLineController {
         Beans.get(SaleOrderLineViewSupplychainService.class)
             .setDistributionLineReadonly(saleOrder));
   }
+
+  public void requestedReservedQtyOnChange(ActionRequest request, ActionResponse response) {
+    Context context = request.getContext();
+    SaleOrderLine saleOrderLine = context.asType(SaleOrderLine.class);
+    response.setValues(Beans.get(SaleOrderLineServiceSupplyChain.class).maxRequestedReservedQty(saleOrderLine));
+  }
 }

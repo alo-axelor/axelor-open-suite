@@ -142,4 +142,14 @@ public class SaleOrderLineProjectController {
         "domain",
         Beans.get(SaleOrderLineDomainProjectService.class).getProjectDomain(saleOrder));
   }
+
+  public void invoicingModeSelectOnChange(ActionRequest request, ActionResponse response) {
+      try {
+        SaleOrderLine saleOrderLine = request.getContext().asType(SaleOrderLine.class);
+        Beans.get(SaleOrderLineO)
+
+      } catch (Exception e) {
+        TraceBackService.trace(response, e);
+      }
+    }
 }

@@ -306,7 +306,7 @@
           if="__config__.app.isApp('supplychain')">
           <field name="requestedReservedQty" colSpan="6" hidden="true"
             if-module="axelor-supplychain"
-            onChange="action-supplychain-attrs-sale-order-line-max-requested-reserved-qty"
+            onChange="action-sale-order-line-method-requested-reserved-qty-onchange"
             if="__config__.app.getApp('supplychain')?.getManageStockReservation()"/>
           <field name="reservedQty" colSpan="6" readonly="true" hidden="true"
             if-module="axelor-supplychain"

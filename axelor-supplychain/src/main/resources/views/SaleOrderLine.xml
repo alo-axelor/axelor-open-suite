@@ -122,7 +122,7 @@
     onLoad="action-sale-order-line-method-set-scale">
     <panel>
       <field name="requestedReservedQty"
-        onChange="action-supplychain-attrs-sale-order-line-max-requested-reserved-qty"/>
+        onChange="action-sale-order-line-method-requested-reserved-qty-onchange"/>
       <button name="confirmNewReservationBtn" title="OK"
         onClick="action-method-sale-order-line-change-requested-reserved-qty,close"/>
       <field name="qty" hidden="true"/>
@@ -258,12 +258,6 @@
 
   <!-- ACTION ATTRS -->
 
-  <action-attrs
-    name="action-supplychain-attrs-sale-order-line-max-requested-reserved-qty">
-    <attribute for="requestedReservedQty" name="value" expr="eval: qty"
-      if="requestedReservedQty &gt; qty"/>
-  </action-attrs>
-
   <action-attrs name="action-supplychain-attrs-sale-order-line-max-reserved-qty">
     <attribute for="reservedQty" name="value" expr="eval: qty" if="reservedQty &gt; qty"/>
   </action-attrs>
@@ -364,6 +358,11 @@
   <action-method name="action-sale-order-line-method-set-distribution-line-readonly">
     <call class="com.axelor.apps.supplychain.web.SaleOrderLineController"
       method="setDistributionLineReadonly"/>
+  </action-method>
+
+  <action-method name="action-sale-order-line-method-requested-reserved-qty-onchange">
+    <call class="com.axelor.apps.supplychain.web.SaleOrderLineController"
+          method="requestedReservedQtyOnChange"/>
   </action-method>
 
 </object-views>
