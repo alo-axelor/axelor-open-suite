@@ -112,7 +112,7 @@ public class SaleOrderLineController {
     var saleOrder = saleOrderLine.getSaleOrder();
 
     if (saleOrder == null) {
-      saleOrder = SaleOrderLineContextHelper.getSaleOrder(request.getContext());
+      saleOrder = SaleOrderLineContextHelper.getSaleOrder(request.getContext(), saleOrderLine);
     }
 
     if (saleOrderLine.getBillOfMaterial() != null && saleOrder != null) {
