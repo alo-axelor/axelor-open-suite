@@ -41,6 +41,7 @@ import com.axelor.apps.supplychain.service.app.AppSupplychainService;
 import com.axelor.apps.supplychain.service.saleorderline.SaleOrderLineAnalyticService;
 import com.axelor.apps.supplychain.service.saleorderline.SaleOrderLineProductSupplychainServiceImpl;
 import com.google.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -97,6 +98,7 @@ public class SaleOrderLineProductProductionServiceImpl
   public Map<String, Object> computeProductInformationProduction(
       SaleOrderLine saleOrderLine, SaleOrder saleOrder) throws AxelorException {
     Map<String, Object> saleOrderLineMap = new HashMap<>();
+    saleOrderLineMap.putAll(resetSolDetails(saleOrderLine));
     saleOrderLineMap.putAll(setBillOfMaterial(saleOrderLine, saleOrder));
 
     return saleOrderLineMap;
@@ -107,6 +109,13 @@ public class SaleOrderLineProductProductionServiceImpl
       SaleOrderLine saleOrderLine, SaleOrder saleOrder) throws AxelorException {
     Map<String, Object> saleOrderLineMap = super.getProductionInformation(saleOrderLine, saleOrder);
     saleOrderLineMap.putAll(setBillOfMaterial(saleOrderLine, saleOrder));
+    return saleOrderLineMap;
+  }
+
+  protected Map<String, Object> resetSolDetails(SaleOrderLine saleOrderLine) {
+    Map<String, Object> saleOrderLineMap = new HashMap<>();
+    saleOrderLine.setSaleOrderLineDetailsList(new ArrayList<>());
+    saleOrderLineMap.put("saleOrderLineDetailsList", saleOrderLine.getSaleOrderLineDetailsList());
     return saleOrderLineMap;
   }
 
@@ -149,18 +158,17 @@ public class SaleOrderLineProductProductionServiceImpl
 
   protected void generateLines(SaleOrderLine saleOrderLine, SaleOrder saleOrder)
       throws AxelorException {
-    if (saleOrderLine.getIsToProduce() && !saleOrderLineBomService.isUpdated(saleOrderLine)) {
-      saleOrderLineBomService
-          .createSaleOrderLinesFromBom(saleOrderLine.getBillOfMaterial(), saleOrder)
-          .stream()
-          .filter(Objects::nonNull)
-          .forEach(saleOrderLine::addSubSaleOrderLineListItem);
+    if (saleOrderLine.getIsToProduce()) {
+      if (!saleOrderLineBomService.isUpdated(saleOrderLine)) {
+        saleOrderLineBomService
+            .createSaleOrderLinesFromBom(saleOrderLine.getBillOfMaterial(), saleOrder)
+            .stream()
+            .filter(Objects::nonNull)
+            .forEach(saleOrderLine::addSubSaleOrderLineListItem);
+      }
 
-      saleOrderLineDetailsBomService
-          .createSaleOrderLineDetailsFromBom(saleOrderLine.getBillOfMaterial(), saleOrder)
-          .stream()
-          .filter(Objects::nonNull)
-          .forEach(saleOrderLine::addSaleOrderLineDetailsListItem);
+      saleOrderLineDetailsBomService.createSaleOrderLineDetailsFromBom(
+          saleOrderLine.getBillOfMaterial(), saleOrderLine, saleOrder);
     }
   }
 }

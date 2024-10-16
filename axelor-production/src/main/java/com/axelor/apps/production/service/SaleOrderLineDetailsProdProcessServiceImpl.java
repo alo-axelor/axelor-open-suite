@@ -1,8 +1,8 @@
 package com.axelor.apps.production.service;
 
 import com.axelor.apps.base.AxelorException;
-import com.axelor.apps.production.db.BillOfMaterial;
-import com.axelor.apps.production.db.BillOfMaterialLine;
+import com.axelor.apps.production.db.ProdProcess;
+import com.axelor.apps.production.db.ProdProcessLine;
 import com.axelor.apps.production.db.SaleOrderLineDetails;
 import com.axelor.apps.production.db.repo.SaleOrderLineDetailsRepository;
 import com.axelor.apps.sale.db.SaleOrder;
@@ -16,39 +16,42 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 
-public class SaleOrderLineDetailsBomServiceImpl implements SaleOrderLineDetailsBomService {
+public class SaleOrderLineDetailsProdProcessServiceImpl
+    implements SaleOrderLineDetailsProdProcessService {
 
-  protected final SaleOrderLineDetailsBomLineMappingService
-      saleOrderLineDetailsBomLineMappingService;
+  protected final SaleOrderLineDetailsProdProcessLineMappingService
+      saleOrderLineDetailsProdProcessLineMappingService;
 
   @Inject
-  public SaleOrderLineDetailsBomServiceImpl(
-      SaleOrderLineDetailsBomLineMappingService saleOrderLineDetailsBomLineMappingService) {
-    this.saleOrderLineDetailsBomLineMappingService = saleOrderLineDetailsBomLineMappingService;
+  public SaleOrderLineDetailsProdProcessServiceImpl(
+      SaleOrderLineDetailsProdProcessLineMappingService
+          saleOrderLineDetailsProdProcessLineMappingService) {
+    this.saleOrderLineDetailsProdProcessLineMappingService =
+        saleOrderLineDetailsProdProcessLineMappingService;
   }
 
   @Override
-  public Map<String, Object> createSaleOrderLineDetailsFromBom(
-      BillOfMaterial billOfMaterial, SaleOrderLine saleOrderLine, SaleOrder saleOrder)
+  public Map<String, Object> createSaleOrderLineDetailsFromProdProcess(
+      ProdProcess prodProcess, SaleOrderLine saleOrderLine, SaleOrder saleOrder)
       throws AxelorException {
     Map<String, Object> map = new HashMap<>();
-    Objects.requireNonNull(billOfMaterial);
+    Objects.requireNonNull(prodProcess);
 
     List<SaleOrderLineDetails> saleOrderLineDetailsList;
     if (saleOrderLine != null
         && CollectionUtils.isNotEmpty(saleOrderLine.getSaleOrderLineDetailsList())) {
       saleOrderLineDetailsList =
           saleOrderLine.getSaleOrderLineDetailsList().stream()
-              .filter(line -> line.getTypeSelect() != SaleOrderLineDetailsRepository.TYPE_COMPONENT)
+              .filter(line -> line.getTypeSelect() != SaleOrderLineDetailsRepository.TYPE_OPERATION)
               .collect(Collectors.toList());
     } else {
       saleOrderLineDetailsList = new ArrayList<>();
     }
 
-    for (BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLineList()) {
+    for (ProdProcessLine prodProcessLine : prodProcess.getProdProcessLineList()) {
       var saleOrderLineDetails =
-          saleOrderLineDetailsBomLineMappingService.mapToSaleOrderLineDetails(
-              billOfMaterialLine, saleOrder);
+          saleOrderLineDetailsProdProcessLineMappingService.mapToSaleOrderLineDetails(
+              prodProcessLine, saleOrder);
       if (saleOrderLineDetails != null) {
         saleOrderLineDetailsList.add(saleOrderLineDetails);
       }
