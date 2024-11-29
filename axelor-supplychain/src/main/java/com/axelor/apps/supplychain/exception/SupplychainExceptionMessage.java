@@ -392,4 +392,7 @@ public final class SupplychainExceptionMessage {
 
   public static final String PARENT_PARTNER_CONFIGURATION_ERROR = /*$$(*/
       "There is a configuration error, partner %s is its own parent." /*)*/;
+
+  public static final String SALE_ORDER_TIMETABLE_CAN_NOT_BE_UPDATED = /*$$(*/
+      "The sale order has already been invoiced. The timetable will not be updated." /*)*/;
 }

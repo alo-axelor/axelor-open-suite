@@ -330,8 +330,15 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
   }
 
   @Override
-  public void updateTimetableAmounts(SaleOrder saleOrder) {
+  public void updateTimetableAmounts(SaleOrder saleOrder) throws AxelorException {
+    int invoicingState = saleOrder.getInvoicingState();
     if (saleOrder.getTimetableList() != null) {
+      if (invoicingState == SaleOrderRepository.INVOICING_STATE_PARTIALLY_INVOICED
+          || invoicingState == SaleOrderRepository.INVOICING_STATE_INVOICED) {
+        throw new AxelorException(
+            TraceBackRepository.CATEGORY_INCONSISTENCY,
+            I18n.get(SupplychainExceptionMessage.SALE_ORDER_TIMETABLE_CAN_NOT_BE_UPDATED));
+      }
       saleOrder
           .getTimetableList()
           .forEach(

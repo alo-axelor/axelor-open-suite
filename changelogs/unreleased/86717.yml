@@ -1,0 +1,3 @@
+---
+title: "Timetable: timetable will not be updated anymore if the sale order has already been invoiced."
+module: axelor-supplychain
