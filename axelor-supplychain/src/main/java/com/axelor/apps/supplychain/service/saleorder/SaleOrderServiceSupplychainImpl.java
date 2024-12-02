@@ -59,14 +59,13 @@ import com.axelor.studio.db.AppSupplychain;
 import com.google.common.base.MoreObjects;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
-import org.apache.commons.collections.CollectionUtils;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 
 public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
     implements SaleOrderSupplychainService {
@@ -340,19 +339,18 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
           || invoicingState == SaleOrderRepository.INVOICING_STATE_INVOICED) {
         return I18n.get(SupplychainExceptionMessage.SALE_ORDER_TIMETABLE_CAN_NOT_BE_UPDATED);
       }
-      timetableList
-          .forEach(
-              timetable ->
-                  timetable.setAmount(
-                      saleOrder
-                          .getExTaxTotal()
-                          .multiply(
-                              timetable
-                                  .getPercentage()
-                                  .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP))
-                          .setScale(
-                              appBaseService.getAppBase().getNbDecimalDigitForUnitPrice(),
-                              RoundingMode.HALF_UP)));
+      timetableList.forEach(
+          timetable ->
+              timetable.setAmount(
+                  saleOrder
+                      .getExTaxTotal()
+                      .multiply(
+                          timetable
+                              .getPercentage()
+                              .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP))
+                      .setScale(
+                          appBaseService.getAppBase().getNbDecimalDigitForUnitPrice(),
+                          RoundingMode.HALF_UP)));
     }
     return "";
   }
