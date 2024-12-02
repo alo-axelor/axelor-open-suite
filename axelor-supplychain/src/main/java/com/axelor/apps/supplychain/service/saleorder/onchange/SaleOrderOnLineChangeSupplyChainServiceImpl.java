@@ -64,11 +64,12 @@ public class SaleOrderOnLineChangeSupplyChainServiceImpl extends SaleOrderOnLine
   }
 
   @Override
-  public void onLineChange(SaleOrder saleOrder) throws AxelorException {
-    super.onLineChange(saleOrder);
+  public String onLineChange(SaleOrder saleOrder) throws AxelorException {
+    String message = super.onLineChange(saleOrder);
     saleOrderSupplychainService.setAdvancePayment(saleOrder);
-    saleOrderSupplychainService.updateTimetableAmounts(saleOrder);
+    message = saleOrderSupplychainService.updateTimetableAmounts(saleOrder);
     saleOrderSupplychainService.updateAmountToBeSpreadOverTheTimetable(saleOrder);
     saleOrderShipmentService.createShipmentCostLine(saleOrder);
+    return message;
   }
 }

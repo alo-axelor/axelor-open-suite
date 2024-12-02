@@ -59,6 +59,8 @@ import com.axelor.studio.db.AppSupplychain;
 import com.google.common.base.MoreObjects;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
@@ -330,17 +332,15 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
   }
 
   @Override
-  public void updateTimetableAmounts(SaleOrder saleOrder) throws AxelorException {
+  public String updateTimetableAmounts(SaleOrder saleOrder) throws AxelorException {
     int invoicingState = saleOrder.getInvoicingState();
-    if (saleOrder.getTimetableList() != null) {
+    List<Timetable> timetableList = saleOrder.getTimetableList();
+    if (CollectionUtils.isNotEmpty(timetableList)) {
       if (invoicingState == SaleOrderRepository.INVOICING_STATE_PARTIALLY_INVOICED
           || invoicingState == SaleOrderRepository.INVOICING_STATE_INVOICED) {
-        throw new AxelorException(
-            TraceBackRepository.CATEGORY_INCONSISTENCY,
-            I18n.get(SupplychainExceptionMessage.SALE_ORDER_TIMETABLE_CAN_NOT_BE_UPDATED));
+        return I18n.get(SupplychainExceptionMessage.SALE_ORDER_TIMETABLE_CAN_NOT_BE_UPDATED);
       }
-      saleOrder
-          .getTimetableList()
+      timetableList
           .forEach(
               timetable ->
                   timetable.setAmount(
@@ -354,6 +354,7 @@ public class SaleOrderServiceSupplychainImpl extends SaleOrderServiceImpl
                               appBaseService.getAppBase().getNbDecimalDigitForUnitPrice(),
                               RoundingMode.HALF_UP)));
     }
+    return "";
   }
 
   @Override
