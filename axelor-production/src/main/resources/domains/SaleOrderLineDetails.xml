@@ -28,6 +28,7 @@
     <decimal name="costPrice" title="Cost price" precision="20" scale="3"/>
     <many-to-one name="prodProcessLine"
       ref="com.axelor.apps.production.db.ProdProcessLine" title="Operation"/>
+    <decimal name="marginCoefficient" title="Margin coefficient" default="1"/>
 
     <extra-code>
             <![CDATA[

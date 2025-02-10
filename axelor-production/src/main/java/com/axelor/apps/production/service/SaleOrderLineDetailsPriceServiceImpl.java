@@ -48,26 +48,43 @@ public class SaleOrderLineDetailsPriceServiceImpl implements SaleOrderLineDetail
     Map<String, Object> lineMap = new HashMap<>();
 
     BigDecimal qty = saleOrderLineDetails.getQty();
-    BigDecimal price = saleOrderLineDetails.getPrice();
 
-    computeTotalPrice(saleOrderLineDetails, price, qty);
     computeSubTotalCostPrice(saleOrderLineDetails, saleOrder, saleOrderLine, qty);
+    computePrice(saleOrderLineDetails);
+    computeTotalPrice(saleOrderLineDetails, qty);
 
     lineMap.putAll(
         marginComputeService.getComputedMarginInfo(
             saleOrder, saleOrderLineDetails, saleOrderLineDetails.getTotalPrice()));
 
-    lineMap.put("totalCostPrice", saleOrderLineDetails.getTotalPrice());
     lineMap.put("subTotalCostPrice", saleOrderLineDetails.getSubTotalCostPrice());
     lineMap.put("costPrice", saleOrderLineDetails.getCostPrice());
     lineMap.put("price", saleOrderLineDetails.getPrice());
+    lineMap.put("totalPrice", saleOrderLineDetails.getTotalPrice());
     return lineMap;
   }
 
-  protected void computeTotalPrice(
-      SaleOrderLineDetails saleOrderLineDetails, BigDecimal price, BigDecimal qty) {
+  private void computePrice(SaleOrderLineDetails saleOrderLineDetails) {
+    int saleOrderLineDetailsTypeSelect = saleOrderLineDetails.getTypeSelect();
+    BigDecimal marginCoefficient = saleOrderLineDetails.getMarginCoefficient();
+    BigDecimal price;
+    BigDecimal costPrice = saleOrderLineDetails.getCostPrice();
+    if (saleOrderLineDetailsTypeSelect == SaleOrderLineDetailsRepository.TYPE_OPERATION) {
+      price =
+          marginCoefficient
+              .multiply(costPrice)
+              .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
+    } else {
+      price = saleOrderLineDetails.getPrice();
+    }
+
+    saleOrderLineDetails.setPrice(price);
+  }
+
+  protected void computeTotalPrice(SaleOrderLineDetails saleOrderLineDetails, BigDecimal qty) {
     BigDecimal totalPrice =
-        price
+        saleOrderLineDetails
+            .getPrice()
             .multiply(qty)
             .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
     saleOrderLineDetails.setTotalPrice(totalPrice);
@@ -98,6 +115,7 @@ public class SaleOrderLineDetailsPriceServiceImpl implements SaleOrderLineDetail
           costPrice
               .multiply(qty)
               .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
+      saleOrderLineDetails.setCostPrice(costPrice);
       saleOrderLineDetails.setSubTotalCostPrice(totalCostPrice);
     }
   }
@@ -115,8 +133,8 @@ public class SaleOrderLineDetailsPriceServiceImpl implements SaleOrderLineDetail
     BigDecimal totalCost =
         prodProcessLineComputeService.computeLineCost(prodProcessLine, qtyToProduce);
 
-    saleOrderLineDetails.setSubTotalCostPrice(totalCost);
-    saleOrderLineDetails.setCostPrice(
-        totalCost.divide(qtyToProduce, digitForPrice, RoundingMode.HALF_UP));
+    BigDecimal costPrice = totalCost.divide(qtyToProduce, digitForPrice, RoundingMode.HALF_UP);
+    saleOrderLineDetails.setSubTotalCostPrice(costPrice);
+    saleOrderLineDetails.setCostPrice(costPrice);
   }
 }

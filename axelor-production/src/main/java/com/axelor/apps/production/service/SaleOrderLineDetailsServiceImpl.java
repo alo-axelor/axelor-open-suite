@@ -53,17 +53,19 @@ public class SaleOrderLineDetailsServiceImpl implements SaleOrderLineDetailsServ
             .multiply(saleOrderLineDetails.getQty())
             .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
 
-    setLineInfo(saleOrderLineDetails, price, totalPrice, totalCostPrice, product);
+    setLineInfo(saleOrderLineDetails, costPrice, price, totalPrice, totalCostPrice, product);
     setMapInfo(saleOrderLineDetails, saleOrder, lineMap);
     return lineMap;
   }
 
   protected void setLineInfo(
       SaleOrderLineDetails saleOrderLineDetails,
+      BigDecimal costPrice,
       BigDecimal price,
       BigDecimal totalPrice,
       BigDecimal totalCostPrice,
       Product product) {
+    saleOrderLineDetails.setCostPrice(costPrice);
     saleOrderLineDetails.setPrice(price);
     saleOrderLineDetails.setTotalPrice(totalPrice);
     saleOrderLineDetails.setSubTotalCostPrice(totalCostPrice);
