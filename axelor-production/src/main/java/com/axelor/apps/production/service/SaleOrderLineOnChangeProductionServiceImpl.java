@@ -2,6 +2,7 @@ package com.axelor.apps.production.service;
 
 import com.axelor.apps.account.service.app.AppAccountService;
 import com.axelor.apps.base.AxelorException;
+import com.axelor.apps.production.db.SaleOrderLineDetails;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.service.saleorderline.SaleOrderLineComputeService;
@@ -23,6 +24,7 @@ public class SaleOrderLineOnChangeProductionServiceImpl
     extends SaleOrderLineOnChangeSupplychainServiceImpl {
 
   protected final SaleOrderLineProductionService saleOrderLineProductionService;
+  protected final SaleOrderLineDetailsPriceService saleOrderLineDetailsPriceService;
 
   @Inject
   public SaleOrderLineOnChangeProductionServiceImpl(
@@ -35,7 +37,8 @@ public class SaleOrderLineOnChangeProductionServiceImpl
       AppAccountService appAccountService,
       SaleOrderLineServiceSupplyChain saleOrderLineServiceSupplyChain,
       AppSupplychainService appSupplychainService,
-      SaleOrderLineProductionService saleOrderLineProductionService) {
+      SaleOrderLineProductionService saleOrderLineProductionService,
+      SaleOrderLineDetailsPriceService saleOrderLineDetailsPriceService) {
     super(
         saleOrderLineDiscountService,
         saleOrderLineComputeService,
@@ -47,6 +50,7 @@ public class SaleOrderLineOnChangeProductionServiceImpl
         saleOrderLineServiceSupplyChain,
         appSupplychainService);
     this.saleOrderLineProductionService = saleOrderLineProductionService;
+    this.saleOrderLineDetailsPriceService = saleOrderLineDetailsPriceService;
   }
 
   @Override
@@ -56,26 +60,37 @@ public class SaleOrderLineOnChangeProductionServiceImpl
 
     Map<String, Object> saleOrderLineMap = super.qtyOnChange(saleOrderLine, saleOrder, parentSol);
 
-    saleOrderLineMap.putAll(updateProduceQty(saleOrderLine, parentSol));
+    saleOrderLineMap.putAll(updateProduceQty(saleOrderLine, saleOrder, parentSol));
 
     return saleOrderLineMap;
   }
 
   protected Map<String, Object> updateProduceQty(
-      SaleOrderLine saleOrderLine, SaleOrderLine parentSol) {
+      SaleOrderLine saleOrderLine, SaleOrder saleOrder, SaleOrderLine parentSol)
+      throws AxelorException {
     saleOrderLine.setQtyToProduce(
         saleOrderLineProductionService.computeQtyToProduce(saleOrderLine, parentSol));
+
+    List<SaleOrderLineDetails> saleOrderLineDetailsList =
+        saleOrderLine.getSaleOrderLineDetailsList();
+    if (CollectionUtils.isNotEmpty(saleOrderLineDetailsList)) {
+      for (SaleOrderLineDetails saleOrderLineDetail : saleOrderLineDetailsList) {
+        saleOrderLineDetailsPriceService.computePrices(
+            saleOrderLineDetail, saleOrder, saleOrderLine);
+      }
+    }
 
     List<SaleOrderLine> subSaleOrderLineList = saleOrderLine.getSubSaleOrderLineList();
     if (CollectionUtils.isNotEmpty(subSaleOrderLineList)) {
       for (SaleOrderLine subSaleOrderLine : subSaleOrderLineList) {
-        updateProduceQty(subSaleOrderLine, saleOrderLine);
+        updateProduceQty(subSaleOrderLine, saleOrder, saleOrderLine);
       }
     }
 
     Map<String, Object> values = new HashMap<>();
     values.put("qtyToProduce", saleOrderLine.getQtyToProduce());
     values.put("subSaleOrderLineList", saleOrderLine.getSubSaleOrderLineList());
+    values.put("saleOrderLineDetailsList", saleOrderLine.getSaleOrderLineDetailsList());
 
     return values;
   }
