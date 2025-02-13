@@ -47,68 +47,70 @@ public class SaleOrderLineDetailsPriceServiceImpl implements SaleOrderLineDetail
       throws AxelorException {
     Map<String, Object> lineMap = new HashMap<>();
 
-    BigDecimal qty = saleOrderLineDetails.getQty();
+    lineMap.putAll(computeSubTotalCostPrice(saleOrderLineDetails, saleOrder, saleOrderLine));
+    lineMap.putAll(computePrice(saleOrderLineDetails));
+    lineMap.putAll(computeTotalPrice(saleOrderLineDetails, saleOrder));
 
-    computeSubTotalCostPrice(saleOrderLineDetails, saleOrder, saleOrderLine, qty);
-    computePrice(saleOrderLineDetails);
-    computeTotalPrice(saleOrderLineDetails, qty);
-
-    lineMap.putAll(
-        marginComputeService.getComputedMarginInfo(
-            saleOrder, saleOrderLineDetails, saleOrderLineDetails.getTotalPrice()));
-
-    lineMap.put("subTotalCostPrice", saleOrderLineDetails.getSubTotalCostPrice());
-    lineMap.put("costPrice", saleOrderLineDetails.getCostPrice());
-    lineMap.put("price", saleOrderLineDetails.getPrice());
-    lineMap.put("totalPrice", saleOrderLineDetails.getTotalPrice());
     return lineMap;
   }
 
-  private void computePrice(SaleOrderLineDetails saleOrderLineDetails) {
-    int saleOrderLineDetailsTypeSelect = saleOrderLineDetails.getTypeSelect();
+  @Override
+  public Map<String, Object> computePrice(SaleOrderLineDetails saleOrderLineDetails) {
+    Map<String, Object> lineMap = new HashMap<>();
     BigDecimal marginCoefficient = saleOrderLineDetails.getMarginCoefficient();
     BigDecimal price;
     BigDecimal costPrice = saleOrderLineDetails.getCostPrice();
-    if (saleOrderLineDetailsTypeSelect == SaleOrderLineDetailsRepository.TYPE_OPERATION) {
-      price =
-          marginCoefficient
-              .multiply(costPrice)
-              .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
-    } else {
-      price = saleOrderLineDetails.getPrice();
-    }
+
+    price =
+        marginCoefficient
+            .multiply(costPrice)
+            .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
 
     saleOrderLineDetails.setPrice(price);
+    lineMap.put("price", saleOrderLineDetails.getPrice());
+    return lineMap;
   }
 
-  protected void computeTotalPrice(SaleOrderLineDetails saleOrderLineDetails, BigDecimal qty) {
+  @Override
+  public Map<String, Object> computeTotalPrice(
+      SaleOrderLineDetails saleOrderLineDetails, SaleOrder saleOrder) throws AxelorException {
+    Map<String, Object> lineMap = new HashMap<>();
+    BigDecimal qty = saleOrderLineDetails.getQty();
     BigDecimal totalPrice =
         saleOrderLineDetails
             .getPrice()
             .multiply(qty)
             .setScale(appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
     saleOrderLineDetails.setTotalPrice(totalPrice);
+
+    lineMap.put("totalPrice", saleOrderLineDetails.getTotalPrice());
+    lineMap.putAll(
+        marginComputeService.getComputedMarginInfo(
+            saleOrder, saleOrderLineDetails, saleOrderLineDetails.getTotalPrice()));
+    return lineMap;
   }
 
-  protected void computeSubTotalCostPrice(
-      SaleOrderLineDetails saleOrderLineDetails,
-      SaleOrder saleOrder,
-      SaleOrderLine saleOrderLine,
-      BigDecimal qty)
+  protected Map<String, Object> computeSubTotalCostPrice(
+      SaleOrderLineDetails saleOrderLineDetails, SaleOrder saleOrder, SaleOrderLine saleOrderLine)
       throws AxelorException {
+    Map<String, Object> lineMap = new HashMap<>();
     int saleOrderLineDetailsTypeSelect = saleOrderLineDetails.getTypeSelect();
     if (saleOrderLineDetailsTypeSelect == SaleOrderLineDetailsRepository.TYPE_OPERATION) {
       computeOperationLineCostPrice(saleOrderLine, saleOrderLineDetails);
     } else {
-      computeTotalCostPrice(saleOrderLineDetails, saleOrder, qty);
+      computeTotalCostPrice(saleOrderLineDetails, saleOrder);
     }
+
+    lineMap.put("subTotalCostPrice", saleOrderLineDetails.getSubTotalCostPrice());
+    lineMap.put("costPrice", saleOrderLineDetails.getCostPrice());
+    return lineMap;
   }
 
   protected void computeTotalCostPrice(
-      SaleOrderLineDetails saleOrderLineDetails, SaleOrder saleOrder, BigDecimal qty)
-      throws AxelorException {
+      SaleOrderLineDetails saleOrderLineDetails, SaleOrder saleOrder) throws AxelorException {
     Company company = saleOrder.getCompany();
     Product product = saleOrderLineDetails.getProduct();
+    BigDecimal qty = saleOrderLineDetails.getQty();
     if (product != null && company != null) {
       BigDecimal costPrice = (BigDecimal) productCompanyService.get(product, "costPrice", company);
       BigDecimal totalCostPrice =
@@ -136,5 +138,18 @@ public class SaleOrderLineDetailsPriceServiceImpl implements SaleOrderLineDetail
     BigDecimal costPrice = totalCost.divide(qtyToProduce, digitForPrice, RoundingMode.HALF_UP);
     saleOrderLineDetails.setSubTotalCostPrice(costPrice);
     saleOrderLineDetails.setCostPrice(costPrice);
+  }
+
+  @Override
+  public Map<String, Object> computeMarginCoef(SaleOrderLineDetails saleOrderLineDetails) {
+    Map<String, Object> lineMap = new HashMap<>();
+    BigDecimal costPrice = saleOrderLineDetails.getCostPrice();
+    BigDecimal price = saleOrderLineDetails.getPrice();
+    BigDecimal marginCoef =
+        price.divide(
+            costPrice, appSaleService.getNbDecimalDigitForUnitPrice(), RoundingMode.HALF_UP);
+    saleOrderLineDetails.setMarginCoefficient(marginCoef);
+    lineMap.put("marginCoefficient", saleOrderLineDetails.getMarginCoefficient());
+    return lineMap;
   }
 }
