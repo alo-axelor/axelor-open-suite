@@ -19,12 +19,17 @@
 package com.axelor.apps.production.web;
 
 import com.axelor.apps.base.AxelorException;
+import com.axelor.apps.production.db.ProdProcessLine;
 import com.axelor.apps.production.db.SaleOrderLineDetails;
+import com.axelor.apps.production.db.repo.ProdProcessLineRepository;
+import com.axelor.apps.production.db.repo.SaleOrderLineDetailsRepository;
 import com.axelor.apps.production.service.SaleOrderLineDetailsPriceService;
 import com.axelor.apps.production.service.SaleOrderLineDetailsService;
+import com.axelor.apps.production.service.SolDetailsProdProcessSyncService;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.apps.sale.service.saleorderline.SaleOrderLineUtils;
+import com.axelor.db.mapper.Mapper;
 import com.axelor.inject.Beans;
 import com.axelor.rpc.ActionRequest;
 import com.axelor.rpc.ActionResponse;
@@ -82,5 +87,45 @@ public class SaleOrderLineDetailsController {
               .getSaleOrder();
     }
     return saleOrder;
+  }
+
+  public void copyProdProcess(ActionRequest request, ActionResponse response) {
+    Context context = request.getContext();
+    if (context.get("_prodProcessLineId") != null) {
+      ProdProcessLineRepository prodProcessLineRepository =
+          Beans.get(ProdProcessLineRepository.class);
+      ProdProcessLine prodProcessLine =
+          prodProcessLineRepository.find(((Integer) context.get("_prodProcessLineId")).longValue());
+      response.setValues(Mapper.toMap(prodProcessLineRepository.copy  (prodProcessLine, true)));
+      response.setValue("$isPersonalized", prodProcessLine.getProdProcess().getIsPersonalized());
+    }
+  }
+
+  public void customize(ActionRequest request, ActionResponse response) throws AxelorException {
+    Context context = request.getContext();
+    ProdProcessLine prodProcessLine = request.getContext().asType(ProdProcessLine.class);
+    SaleOrderLineDetails saleOrderLineDetails = null;
+    if (context.get("_saleOrderLineDetailsId") != null) {
+      SaleOrderLineDetailsRepository saleOrderLineDetailsRepository =
+              Beans.get(SaleOrderLineDetailsRepository.class);
+      saleOrderLineDetails =
+              saleOrderLineDetailsRepository.find(((Integer) context.get("_saleOrderLineDetailsId")).longValue());
+    }
+    Beans.get(SolDetailsProdProcessSyncService.class).customizeProdProcessAndUpdateSol(prodProcessLine, saleOrderLineDetails);
+    response.setCanClose(true);
+  }
+
+  public void update(ActionRequest request, ActionResponse response) {
+    Context context = request.getContext();
+    ProdProcessLine prodProcessLine = request.getContext().asType(ProdProcessLine.class);
+    SaleOrderLineDetails saleOrderLineDetails = null;
+    if (context.get("_saleOrderLineDetailsId") != null) {
+      SaleOrderLineDetailsRepository saleOrderLineDetailsRepository =
+              Beans.get(SaleOrderLineDetailsRepository.class);
+      saleOrderLineDetails =
+              saleOrderLineDetailsRepository.find(((Integer) context.get("_saleOrderLineDetailsId")).longValue());
+    }
+    Beans.get(SolDetailsProdProcessSyncService.class).updateSolDetailsProdProcessLine(prodProcessLine, saleOrderLineDetails);
+    response.setCanClose(true);
   }
 }

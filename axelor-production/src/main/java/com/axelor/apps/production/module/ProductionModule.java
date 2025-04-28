@@ -139,6 +139,8 @@ import com.axelor.apps.production.service.SolDetailsBomUpdateService;
 import com.axelor.apps.production.service.SolDetailsBomUpdateServiceImpl;
 import com.axelor.apps.production.service.SolDetailsProdProcessLineMappingService;
 import com.axelor.apps.production.service.SolDetailsProdProcessLineMappingServiceImpl;
+import com.axelor.apps.production.service.SolDetailsProdProcessSyncService;
+import com.axelor.apps.production.service.SolDetailsProdProcessSyncServiceImpl;
 import com.axelor.apps.production.service.SopService;
 import com.axelor.apps.production.service.SopServiceImpl;
 import com.axelor.apps.production.service.StockMoveLineProductionServiceImpl;
@@ -430,5 +432,6 @@ public class ProductionModule extends AxelorModule {
         .to(SolDetailsProdProcessLineMappingServiceImpl.class);
     bind(ProdProcessLineHourlyCostComputeService.class)
         .to(ProdProcessLineHourlyCostComputeServiceImpl.class);
+    bind(SolDetailsProdProcessSyncService.class).to(SolDetailsProdProcessSyncServiceImpl.class);
   }
 }

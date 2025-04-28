@@ -5,6 +5,7 @@
 
   <grid name="sale-order-line-details-grid" title="Sale order lines details"
     model="com.axelor.apps.production.db.SaleOrderLineDetails">
+    <field name="prodProcessLine.id" type="long"/>
     <field name="typeSelect" onChange="action-sale-order-line-details-group-type-onchange"
       widget="ImageSelect" title=""/>
     <field name="product" form-view="product-form" grid-view="product-grid"
@@ -22,10 +23,14 @@
       x-scale="$nbDecimalDigitForUnitPrice"/>
     <field name="totalPrice" x-scale="$nbDecimalDigitForUnitPrice"/>
     <field name="description"/>
+    <button name="openWorkCenterBtn"
+      onClick="action-sale-order-line-details-view-open-prod-process-line"
+      readonlyIf="typeSelect != 3" icon="fa-hammer"/>
   </grid>
 
   <grid name="sale-order-line-details-readonly-grid" title="Sale order lines details"
     model="com.axelor.apps.production.db.SaleOrderLineDetails">
+    <field name="prodProcessLine.id" type="long" />
     <field name="typeSelect" onChange="action-sale-order-line-details-group-type-onchange"
       widget="ImageSelect"/>
     <field name="title"/>
@@ -45,6 +50,8 @@
     onLoad="action-sale-order-line-details-group-onload">
     <panel-tabs name="mainPanelTabs" colSpan="12">
       <panel name="mainPanel" title="Information">
+        <field name="prodProcessLine"/>
+        <field name="prodProcessLine.id"/>
         <field name="typeSelect" colSpan="6"
           onChange="action-sale-order-line-details-group-type-onchange"/>
         <field name="title" colSpan="6"/>
@@ -141,6 +148,41 @@
   <action-method name="action-sale-order-line-details-method-margin-coef-onchange">
     <call class="com.axelor.apps.production.web.SaleOrderLineDetailsController"
       method="marginCoefOnChange"/>
+  </action-method>
+
+  <action-view name="action-sale-order-line-details-view-open-prod-process-line"
+    title="Production process line" model="com.axelor.apps.production.db.ProdProcessLine">
+    <view type="form" name="sol-details-prod-process-line-form"/>
+    <view-param name="popup" value="reload"/>
+    <view-param name="show-toolbar" value="false"/>
+    <view-param name="forceEdit" value="true"/>
+    <view-param name="popup-save" value="false"/>
+    <context name="_prodProcessLineId" expr="eval: prodProcessLine.id"/>
+    <context name="_saleOrderLineDetailsId" expr="eval: id"/>
+  </action-view>
+
+  <form title="Phase" name="sol-details-prod-process-line-form"
+    model="com.axelor.apps.production.db.ProdProcessLine"
+    onNew="copy-prod-process, action-prod-process-line-attrs-default,action-prod-process-line-attrs-outsourcing, action-prod-process-line-attrs-hide-duration"
+    onLoad="action-prod-process-line-attrs-default,action-prod-process-line-attrs-hide-duration,action-prod-process-line-attrs-outsourcing">
+    <panel name="mainPanel">
+      <panel-include view="prod-process-line-form"/>
+      <button name="personnalizeBtn" title="Customize prod process" onClick="customize"
+        showIf="!$isPersonalized"/>
+      <button name="updateBtn" title="Update prod process" onClick="customize"
+        showIf="$isPersonalized"/>
+      <field name="$isPersonalized" hidden="true"/>
+    </panel>
+  </form>
+
+  <action-method name="copy-prod-process">
+    <call class="com.axelor.apps.production.web.SaleOrderLineDetailsController"
+      method="copyProdProcess"/>
+  </action-method>
+
+  <action-method name="customize">
+    <call class="com.axelor.apps.production.web.SaleOrderLineDetailsController"
+      method="customize"/>
   </action-method>
 
 </object-views>
