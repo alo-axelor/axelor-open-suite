@@ -10,4 +10,10 @@ public interface SolDetailsProdProcessLineMappingService {
   SaleOrderLineDetails mapToSaleOrderLineDetails(
       SaleOrder saleOrder, SaleOrderLine saleOrderLine, ProdProcessLine prodProcessLine)
       throws AxelorException;
+
+  void setQty(
+      SaleOrderLine saleOrderLine,
+      ProdProcessLine prodProcessLine,
+      SaleOrderLineDetails saleOrderLineDetails)
+      throws AxelorException;
 }

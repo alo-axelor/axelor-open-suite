@@ -13,6 +13,7 @@ import com.axelor.apps.sale.db.SaleOrderLine;
 import com.axelor.studio.db.AppBase;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 public class SolDetailsProdProcessLineMappingServiceImpl
@@ -57,7 +58,7 @@ public class SolDetailsProdProcessLineMappingServiceImpl
     return saleOrderLineDetails;
   }
 
-  protected void setQty(
+  public void setQty(
       SaleOrderLine saleOrderLine,
       ProdProcessLine prodProcessLine,
       SaleOrderLineDetails saleOrderLineDetails)
@@ -70,15 +71,21 @@ public class SolDetailsProdProcessLineMappingServiceImpl
     switch (workCenterTypeSelect) {
       case WorkCenterRepository.WORK_CENTER_TYPE_HUMAN:
         saleOrderLineDetails.setQty(
-            prodProcessLineComputationService.getHourHumanDuration(prodProcessLine, nbCycle));
+            prodProcessLineComputationService
+                .getHourHumanDuration(prodProcessLine, nbCycle)
+                .setScale(appBaseService.getNbDecimalDigitForQty(), RoundingMode.HALF_UP));
         break;
       case WorkCenterRepository.WORK_CENTER_TYPE_MACHINE:
         saleOrderLineDetails.setQty(
-            prodProcessLineComputationService.getHourMachineDuration(prodProcessLine, nbCycle));
+            prodProcessLineComputationService
+                .getHourMachineDuration(prodProcessLine, nbCycle)
+                .setScale(appBaseService.getNbDecimalDigitForQty(), RoundingMode.HALF_UP));
         break;
       default:
         saleOrderLineDetails.setQty(
-            prodProcessLineComputationService.getHourTotalDuration(prodProcessLine, nbCycle));
+            prodProcessLineComputationService
+                .getHourTotalDuration(prodProcessLine, nbCycle)
+                .setScale(appBaseService.getNbDecimalDigitForQty(), RoundingMode.HALF_UP));
     }
   }
 

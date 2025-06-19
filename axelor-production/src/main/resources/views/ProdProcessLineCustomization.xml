@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_7.2.xsd">
+
+  <action-view name="action-sale-order-line-details-view-open-prod-process-line"
+    title="Production process line" model="com.axelor.utils.db.Wizard">
+    <view type="form" name="sol-customization-prod-process-form"/>
+    <view-param name="popup" value="reload"/>
+    <view-param name="show-toolbar" value="false"/>
+    <view-param name="forceEdit" value="true"/>
+    <view-param name="popup-save" value="false"/>
+    <view-param name="show-confirm" value="true"/>
+    <context name="_saleOrderLineId" expr="eval: id"/>
+  </action-view>
+
+  <form title="Customization" name="sol-customization-prod-process-form"
+    model="com.axelor.utils.db.Wizard" onNew="action-prod-process-line-customization-method-copy-prod-process">
+    <panel name="mainPanel">
+      <panel-related field="$prodProcessLineList" title="Prod process line list"
+        form-view="prod-process-line-form" grid-view="prod-process-line-grid"
+        target="com.axelor.apps.production.db.ProdProcessLine" colSpan="12"/>
+      <button name="personnalizeBtn" title="Customize production process" onClick="action-prod-process-line-customization-method-customize"
+        showIf="!$isPersonalized"/>
+      <button name="updateBtn" title="Update production process" onClick="action-prod-process-line-customization-method-update"
+        showIf="$isPersonalized"/>
+      <field name="$isPersonalized" hidden="true"/>
+    </panel>
+  </form>
+
+  <action-method name="action-prod-process-line-customization-method-copy-prod-process">
+    <call class="com.axelor.apps.production.web.ProdProcessLineCustomizationController"
+      method="copyProdProcess"/>
+  </action-method>
+
+  <action-method name="action-prod-process-line-customization-method-customize">
+    <call class="com.axelor.apps.production.web.ProdProcessLineCustomizationController"
+      method="customize"/>
+  </action-method>
+
+  <action-method name="action-prod-process-line-customization-method-update">
+    <call class="com.axelor.apps.production.web.ProdProcessLineCustomizationController"
+      method="update"/>
+  </action-method>
+
+</object-views>

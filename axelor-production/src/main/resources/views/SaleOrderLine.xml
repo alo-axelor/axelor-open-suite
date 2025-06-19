@@ -17,6 +17,12 @@
         <field name="saleSupplySelect" hidden="true"/>
       </insert>
     </extend>
+    <extend target="//button[@name='configuratorDuplicateBtn']">
+      <insert position="after">
+        <button name="personnalizeProdProcessBtn"
+          onClick="action-sale-order-line-details-view-open-prod-process-line" title="Edit the production process" icon="fa-hammer"/>
+      </insert>
+    </extend>
   </grid>
 
   <form name="sale-order-line-form" id="production-sale-order-line-form" title="SO line"

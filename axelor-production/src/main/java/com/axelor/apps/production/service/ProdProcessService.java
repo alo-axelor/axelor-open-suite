@@ -175,13 +175,13 @@ public class ProdProcessService {
   }
 
   @Transactional(rollbackOn = {Exception.class})
-  public ProdProcess createCustomizedProdProcess(SaleOrderLine saleOrderLine) {
+  public ProdProcess createCustomizedProdProcess(SaleOrderLine saleOrderLine, boolean deep) {
     ProdProcess prodProcess = saleOrderLine.getProdProcess();
-    return createCustomizedProdProcess(prodProcess);
+    return createCustomizedProdProcess(prodProcess, deep);
   }
 
   @Transactional(rollbackOn = {Exception.class})
-  public ProdProcess createCustomizedProdProcess(ProdProcess prodProcess) {
+  public ProdProcess createCustomizedProdProcess(ProdProcess prodProcess, boolean deep) {
 
     if (prodProcess == null) {
       return null;
@@ -194,7 +194,7 @@ public class ProdProcessService {
                 .bind("product", prodProcess.getProduct())
                 .count()
             + 1;
-    ProdProcess personalizedProdProcess = JPA.copy(prodProcess, true);
+    ProdProcess personalizedProdProcess = JPA.copy(prodProcess, deep);
     String name =
         personalizedProdProcess.getName()
             + " ("

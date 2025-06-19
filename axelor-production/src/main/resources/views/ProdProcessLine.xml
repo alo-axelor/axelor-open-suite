@@ -19,7 +19,7 @@
     onNew="action-prod-process-line-record-default, action-prod-process-line-attrs-default,action-prod-process-line-attrs-outsourcing"
     onLoad="action-prod-process-line-attrs-default,action-prod-process-line-attrs-hide-duration,action-prod-process-line-attrs-outsourcing"
     width="large">
-    <panel name="mainPanel">
+    <panel name="mainPanel" colSpan="12">
       <field name="name"/>
       <field name="priority" colSpan="3"/>
       <panel name="workCenterGroupPanel" colSpan="12">

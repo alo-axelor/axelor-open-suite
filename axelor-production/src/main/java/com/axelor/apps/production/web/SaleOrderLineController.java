@@ -74,7 +74,7 @@ public class SaleOrderLineController {
       SaleOrderLine saleOrderLine = request.getContext().asType(SaleOrderLine.class);
 
       ProdProcess copyProdProcess =
-          Beans.get(ProdProcessService.class).createCustomizedProdProcess(saleOrderLine);
+          Beans.get(ProdProcessService.class).createCustomizedProdProcess(saleOrderLine, true);
 
       if (copyProdProcess != null) {
         response.setValue("prodProcess", copyProdProcess);
