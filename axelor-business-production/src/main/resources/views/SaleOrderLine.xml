@@ -38,6 +38,9 @@
       <hilite strong="true" color="success" if="availableStatusSelect == 1"/>
       <hilite color="danger" strong="true" if="availableStatusSelect == 2"/>
     </field>
+    <button name="personnalizeProdProcessBtn"
+            onClick="action-sale-order-line-details-view-open-prod-process-line"
+            title="Edit the production process" icon="fa-hammer"/>
     <field name="saleOrder.statusSelect"/>
     <field name="saleOrder"/>
     <field name="saleOrder.createdOn"/>

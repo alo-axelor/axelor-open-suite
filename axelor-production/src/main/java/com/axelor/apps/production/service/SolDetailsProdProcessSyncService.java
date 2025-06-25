@@ -11,5 +11,7 @@ public interface SolDetailsProdProcessSyncService {
       SaleOrderLine saleOrderLine, List<Map<String, Object>> prodProcessLineMapList)
       throws AxelorException;
 
-  void updateSolDetailsProdProcessLine(SaleOrderLine saleOrderLine, List<Map<String, Object>> prodProcessLineMapList) throws AxelorException;
+  void updateSolDetailsProdProcessLine(
+      SaleOrderLine saleOrderLine, List<Map<String, Object>> prodProcessLineMapList)
+      throws AxelorException;
 }

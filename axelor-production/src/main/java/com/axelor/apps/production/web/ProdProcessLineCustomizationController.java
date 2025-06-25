@@ -67,7 +67,7 @@ public class ProdProcessLineCustomizationController {
     } else {
       return;
     }
-        Beans.get(SolDetailsProdProcessSyncService.class)
+    Beans.get(SolDetailsProdProcessSyncService.class)
         .updateSolDetailsProdProcessLine(saleOrderLine, prodProcessLineMapList);
     response.setCanClose(true);
   }

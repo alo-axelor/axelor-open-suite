@@ -4,7 +4,6 @@ import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.production.db.ObjectDescription;
 import com.axelor.apps.production.db.ProdProcess;
 import com.axelor.apps.production.db.ProdProcessLine;
-import com.axelor.apps.production.db.ProdProduct;
 import com.axelor.apps.production.db.SaleOrderLineDetails;
 import com.axelor.apps.production.db.repo.ObjectDescriptionRepository;
 import com.axelor.apps.production.db.repo.ProdProcessLineRepository;
@@ -24,7 +23,6 @@ import com.google.inject.persist.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 
 public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProcessSyncService {
@@ -46,19 +44,20 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
 
   @Inject
   public SolDetailsProdProcessSyncServiceImpl(
-          ProdProcessService prodProcessService,
-          ProdProcessLineRepository prodProcessLineRepository,
-          ObjectDescriptionRepository objectDescriptionRepository,
-          ProdProductRepository prodProductRepository,
-          SaleOrderLineDetailsService saleOrderLineDetailsService,
-          SaleOrderLineDetailsPriceService saleOrderLineDetailsPriceService,
-          SaleOrderComputeService saleOrderComputeService,
-          SolDetailsProdProcessLineMappingService solDetailsProdProcessLineMappingService,
-          SaleOrderLineDetailsRepository saleOrderLineDetailsRepository,
-          SaleOrderLineRepository saleOrderLineRepository,
-          SolDetailsProdProcessLineMappingService prodProcessLineMappingService,
-          SaleOrderRepository saleOrderRepository,
-          WorkCenterRepository workCenterRepository, MetaFileRepository metaFileRepository) {
+      ProdProcessService prodProcessService,
+      ProdProcessLineRepository prodProcessLineRepository,
+      ObjectDescriptionRepository objectDescriptionRepository,
+      ProdProductRepository prodProductRepository,
+      SaleOrderLineDetailsService saleOrderLineDetailsService,
+      SaleOrderLineDetailsPriceService saleOrderLineDetailsPriceService,
+      SaleOrderComputeService saleOrderComputeService,
+      SolDetailsProdProcessLineMappingService solDetailsProdProcessLineMappingService,
+      SaleOrderLineDetailsRepository saleOrderLineDetailsRepository,
+      SaleOrderLineRepository saleOrderLineRepository,
+      SolDetailsProdProcessLineMappingService prodProcessLineMappingService,
+      SaleOrderRepository saleOrderRepository,
+      WorkCenterRepository workCenterRepository,
+      MetaFileRepository metaFileRepository) {
     this.prodProcessService = prodProcessService;
     this.prodProcessLineRepository = prodProcessLineRepository;
     this.objectDescriptionRepository = objectDescriptionRepository;
@@ -72,7 +71,7 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
     this.prodProcessLineMappingService = prodProcessLineMappingService;
     this.saleOrderRepository = saleOrderRepository;
     this.workCenterRepository = workCenterRepository;
-      this.metaFileRepository = metaFileRepository;
+    this.metaFileRepository = metaFileRepository;
   }
 
   @Transactional(rollbackOn = {Exception.class})
@@ -91,7 +90,9 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
 
   @Transactional(rollbackOn = {Exception.class})
   @Override
-  public void updateSolDetailsProdProcessLine(SaleOrderLine saleOrderLine, List<Map<String, Object>> prodProcessLineMapList) throws AxelorException {
+  public void updateSolDetailsProdProcessLine(
+      SaleOrderLine saleOrderLine, List<Map<String, Object>> prodProcessLineMapList)
+      throws AxelorException {
     for (SaleOrderLineDetails saleOrderLineDetails : saleOrderLine.getSaleOrderLineDetailsList()) {
       ProdProcessLine prodProcessLine = saleOrderLineDetails.getProdProcessLine();
       if (prodProcessLine != null) {
@@ -107,16 +108,16 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
   }
 
   protected void copyAndCustomProcessProcessLine(
-          List<Map<String, Object>> prodProcessLineMapList,
-          SaleOrderLine saleOrderLine,
-          ProdProcess newProdProcess)
-          throws AxelorException {
+      List<Map<String, Object>> prodProcessLineMapList,
+      SaleOrderLine saleOrderLine,
+      ProdProcess newProdProcess)
+      throws AxelorException {
     for (SaleOrderLineDetails saleOrderLineDetails : saleOrderLine.getSaleOrderLineDetailsList()) {
       if (saleOrderLineDetails.getProdProcessLine() != null) {
         ProdProcessLine newProdProcessLine =
-                prodProcessLineRepository.copy(
-                        prodProcessLineRepository.find(saleOrderLineDetails.getProdProcessLine().getId()),
-                        false);
+            prodProcessLineRepository.copy(
+                prodProcessLineRepository.find(saleOrderLineDetails.getProdProcessLine().getId()),
+                false);
         updateProdProcessLine(prodProcessLineMapList, newProdProcessLine);
         prodProcessLineRepository.save(newProdProcessLine);
         saleOrderLineDetails.setProdProcessLine(newProdProcessLine);
@@ -126,7 +127,8 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
     }
   }
 
-  protected void updateProdProcessLine(List<Map<String, Object>> prodProcessLineMapList, ProdProcessLine lineToUpdate) {
+  protected void updateProdProcessLine(
+      List<Map<String, Object>> prodProcessLineMapList, ProdProcessLine lineToUpdate) {
     for (Map<String, Object> map : prodProcessLineMapList) {
       if (map.get("name").equals(lineToUpdate.getName())) {
         updateProdProcessLine(map, lineToUpdate);
@@ -148,12 +150,15 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
     prodProcessLineRepository.save(lineToUpdate);
   }
 
-  protected void computeAndSaveSolDetails(SaleOrderLine saleOrderLine, SaleOrderLineDetails saleOrderLineDetails, ProdProcessLine newProdProcessLine) throws AxelorException {
+  protected void computeAndSaveSolDetails(
+      SaleOrderLine saleOrderLine,
+      SaleOrderLineDetails saleOrderLineDetails,
+      ProdProcessLine newProdProcessLine)
+      throws AxelorException {
     SaleOrder saleOrder = saleOrderLineDetailsService.getParentSaleOrder(saleOrderLineDetails);
     solDetailsProdProcessLineMappingService.setQty(
-            saleOrderLine, newProdProcessLine, saleOrderLineDetails);
-    saleOrderLineDetailsPriceService.computePrices(
-            saleOrderLineDetails, saleOrder, saleOrderLine);
+        saleOrderLine, newProdProcessLine, saleOrderLineDetails);
+    saleOrderLineDetailsPriceService.computePrices(saleOrderLineDetails, saleOrder, saleOrderLine);
     saleOrderLineDetailsRepository.save(saleOrderLineDetails);
   }
 
@@ -185,7 +190,8 @@ public class SolDetailsProdProcessSyncServiceImpl implements SolDetailsProdProce
       ObjectDescription newObjectDescription =
           Mapper.toBean(ObjectDescription.class, objectDescriptionMap);
       newObjectDescription.setProdProcessLine(lineToUpdate);
-      newObjectDescription.setImage(metaFileRepository.find(newObjectDescription.getImage().getId()));
+      newObjectDescription.setImage(
+          metaFileRepository.find(newObjectDescription.getImage().getId()));
       objectDescriptionRepository.save(newObjectDescription);
     }
   }
