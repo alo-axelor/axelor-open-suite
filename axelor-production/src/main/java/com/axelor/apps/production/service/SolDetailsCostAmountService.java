@@ -4,10 +4,11 @@ import com.axelor.apps.production.db.SaleOrderLineDetails;
 import com.axelor.apps.sale.db.SaleOrderLine;
 import java.math.BigDecimal;
 
-public interface SolDetailsDurationService {
-  BigDecimal computeSolDetailsDuration(
+public interface SolDetailsCostAmountService {
+
+  BigDecimal computeSolDetailsMachineCostAmount(
       SaleOrderLineDetails saleOrderLineDetails, SaleOrderLine saleOrderLine);
 
-  BigDecimal computeSolDetailsHumanDuration(
+  BigDecimal computeSolDetailsHumanCostAmount(
       SaleOrderLineDetails saleOrderLineDetails, SaleOrderLine saleOrderLine);
 }

@@ -61,14 +61,25 @@ public class ProdProcessLineHourlyCostComputeServiceImpl
     } else if (workCenterTypeSelect == WorkCenterRepository.WORK_CENTER_TYPE_MACHINE) {
       costAmount = machineCostAmount;
     } else {
-      BigDecimal humanDuration =
-          prodProcessLineComputationService.getHourHumanDuration(prodProcessLine, nbCycles);
-      BigDecimal machineDuration =
-          prodProcessLineComputationService.getHourMachineDuration(prodProcessLine, qtyToProduce);
-      if (machineDuration.compareTo(humanDuration) > 0) {
-        costAmount = machineCostAmount;
+
+      humanCostAmount =
+          humanCostAmount.multiply(
+              prodProcessLineComputationService.getHourHumanDuration(prodProcessLine, nbCycles));
+      machineCostAmount =
+          machineCostAmount.multiply(
+              prodProcessLineComputationService.getHourMachineDuration(
+                  prodProcessLine, qtyToProduce));
+      BigDecimal totalAmount = humanCostAmount.add(machineCostAmount);
+      BigDecimal totalDuration =
+          prodProcessLineComputationService.getHourTotalDuration(prodProcessLine, nbCycles);
+      if (totalDuration.compareTo(BigDecimal.ZERO) > 0) {
+        costAmount =
+            totalAmount.divide(
+                totalDuration,
+                appBaseService.getNbDecimalDigitForUnitPrice(),
+                RoundingMode.HALF_UP);
       } else {
-        costAmount = humanCostAmount;
+        costAmount = BigDecimal.ZERO;
       }
     }
 
@@ -88,7 +99,8 @@ public class ProdProcessLineHourlyCostComputeServiceImpl
     return getHumanCostAmount(costTypeSelect, costAmount, workCenter);
   }
 
-  protected BigDecimal getHumanCostAmount(
+  @Override
+  public BigDecimal getHumanCostAmount(
       int costTypeSelect, BigDecimal costAmount, WorkCenter workCenter) {
     if (costTypeSelect == WorkCenterRepository.COST_TYPE_PER_PIECE) {
       BigDecimal hrDurationPerCycle =
@@ -116,19 +128,27 @@ public class ProdProcessLineHourlyCostComputeServiceImpl
             : workCenter.getCostTypeSelect();
     BigDecimal nbCycles =
         prodProcessLineComputationService.getNbCycle(prodProcessLine, qtyToProduce);
-    return getMachineCostAmount(prodProcessLine, costTypeSelect, nbCycles, costAmount);
+    return getMachineCostAmount(
+        prodProcessLine.getDurationPerCycle(),
+        prodProcessLine.getMaxCapacityPerCycle(),
+        costTypeSelect,
+        nbCycles,
+        costAmount);
   }
 
-  protected BigDecimal getMachineCostAmount(
-      ProdProcessLine prodProcessLine,
+  @Override
+  public BigDecimal getMachineCostAmount(
+      long durationPerCycle,
+      BigDecimal maxCapacityPerCycle,
       int costTypeSelect,
       BigDecimal nbCycles,
       BigDecimal costAmount) {
     if (costTypeSelect == WorkCenterRepository.COST_TYPE_PER_CYCLE) {
-      BigDecimal nbCyclePerHour = computeCycleHourlyCost(prodProcessLine, nbCycles);
+      BigDecimal nbCyclePerHour = computeCycleHourlyCost(durationPerCycle, nbCycles);
       return costAmount.multiply(nbCyclePerHour);
     } else if (costTypeSelect == WorkCenterRepository.COST_TYPE_PER_PIECE) {
-      BigDecimal durationForOnePiece = computeDurationForOnePiece(prodProcessLine);
+      BigDecimal durationForOnePiece =
+          computeDurationForOnePiece(maxCapacityPerCycle, durationPerCycle);
       return costAmount.divide(
           durationForOnePiece,
           appBaseService.getNbDecimalDigitForUnitPrice(),
@@ -137,19 +157,18 @@ public class ProdProcessLineHourlyCostComputeServiceImpl
     return costAmount;
   }
 
-  protected BigDecimal computeDurationForOnePiece(ProdProcessLine prodProcessLine) {
-    BigDecimal maxCapacityPerCycle = prodProcessLine.getMaxCapacityPerCycle();
-    BigDecimal durationPerCycle =
-        prodProcessLineComputationService.getHourDurationPerCycle(prodProcessLine);
-    return durationPerCycle.divide(
+  protected BigDecimal computeDurationForOnePiece(
+      BigDecimal maxCapacityPerCycle, long durationPerCycle) {
+    BigDecimal hourDurationPerCycle =
+        prodProcessLineComputationService.computeHourDurationPerCycle(durationPerCycle);
+    return hourDurationPerCycle.divide(
         maxCapacityPerCycle, AppBaseService.COMPUTATION_SCALING, RoundingMode.HALF_UP);
   }
 
-  protected BigDecimal computeCycleHourlyCost(
-      ProdProcessLine prodProcessLine, BigDecimal nbCycles) {
-    BigDecimal durationPerCycle =
-        prodProcessLineComputationService.getHourDurationPerCycle(prodProcessLine);
+  protected BigDecimal computeCycleHourlyCost(long durationPerCycle, BigDecimal nbCycles) {
+    BigDecimal hourDurationPerCycle =
+        prodProcessLineComputationService.computeHourDurationPerCycle(durationPerCycle);
     return nbCycles.divide(
-        durationPerCycle, AppBaseService.COMPUTATION_SCALING, RoundingMode.HALF_UP);
+        hourDurationPerCycle, AppBaseService.COMPUTATION_SCALING, RoundingMode.HALF_UP);
   }
 }
