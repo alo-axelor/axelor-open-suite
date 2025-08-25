@@ -1,0 +1,40 @@
+package com.axelor.apps.base.tracking;
+
+import com.axelor.auth.AuditableRunner;
+import com.axelor.auth.AuthUtils;
+import com.axelor.auth.db.User;
+import java.util.Optional;
+import org.hibernate.CacheMode;
+import org.hibernate.FlushMode;
+import org.hibernate.engine.spi.SessionImplementor;
+
+final class GlobalAuditUtils {
+
+  static User findUser(SessionImplementor session, String code) {
+    return session
+        .createQuery("SELECT self FROM User self WHERE self.code = :code", User.class)
+        .setParameter("code", code)
+        .setHibernateFlushMode(FlushMode.MANUAL)
+        .setCacheMode(CacheMode.NORMAL)
+        .uniqueResult();
+  }
+
+  static User currentUser(SessionImplementor session) {
+    User user = AuditableRunner.batchUser();
+    if (user == null) {
+      String code =
+          Optional.ofNullable(AuthUtils.getSubject())
+              .map(x -> x.getPrincipal())
+              .map(x -> x.toString())
+              .orElse(null);
+      user = findUser(session, code);
+    }
+
+    if (user == null) return null;
+    if (session.contains(user)) {
+      return user;
+    }
+
+    return findUser(session, user.getCode());
+  }
+}
