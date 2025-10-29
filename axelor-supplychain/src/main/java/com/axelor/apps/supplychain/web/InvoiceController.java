@@ -22,8 +22,11 @@ import com.axelor.apps.account.db.Invoice;
 import com.axelor.apps.account.service.invoice.InvoiceLineService;
 import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.base.service.exception.TraceBackService;
+import com.axelor.apps.sale.db.SaleOrder;
+import com.axelor.apps.sale.db.repo.SaleOrderRepository;
 import com.axelor.apps.sale.service.app.AppSaleService;
 import com.axelor.apps.supplychain.exception.SupplychainExceptionMessage;
+import com.axelor.apps.supplychain.service.app.AppSupplychainService;
 import com.axelor.apps.supplychain.service.invoice.InvoiceServiceSupplychain;
 import com.axelor.apps.supplychain.service.invoice.SubscriptionInvoiceService;
 import com.axelor.i18n.I18n;
@@ -32,6 +35,7 @@ import com.axelor.rpc.ActionRequest;
 import com.axelor.rpc.ActionResponse;
 import com.google.inject.Singleton;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
 
 @Singleton
@@ -78,5 +82,27 @@ public class InvoiceController {
       TraceBackService.trace(response, e);
     }
     response.setReload(true);
+  }
+
+  public void refreshFiscalPositionWarning(ActionRequest request, ActionResponse response) {
+    try {
+
+      if (!Beans.get(AppSupplychainService.class).isApp("supplychain")) {
+        return;
+      }
+      Invoice invoice = request.getContext().asType(Invoice.class);
+      response.setAttr("$fiscalPositionWarning", "hidden", !hasFiscalPositionMismatch(invoice));
+    } catch (Exception e) {
+      TraceBackService.trace(response, e);
+    }
+  }
+
+  protected boolean hasFiscalPositionMismatch(Invoice invoice) {
+    if (invoice == null || invoice.getSaleOrder() == null) {
+      return false;
+    }
+
+    SaleOrder saleOrder = Beans.get(SaleOrderRepository.class).find(invoice.getSaleOrder().getId());
+    return !Objects.equals(saleOrder.getFiscalPosition(), invoice.getFiscalPosition());
   }
 }
